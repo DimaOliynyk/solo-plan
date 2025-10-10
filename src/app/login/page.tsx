@@ -2,8 +2,8 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <header className="justify-items-center">
-            <img src="./main-logo.png" alt="main logo"/>
-            <div className="mt-[30px]">
+            {/* <img src="./main-logo.png" alt="main logo"/> */}
+            <div className="mt-[0]">
               <h2 className="text-center text-[22px] text-black font-medium">Hello Welcome back!</h2>
               <p className="text-center text-[gray] text-[16px]">Sign in to continue</p>
             </div>
@@ -16,7 +16,7 @@ export default function Login() {
             <p className="mb-[10px]">Password</p>
             <input type="password" placeholder="password" className="mb-[20px] w-[100%] h-[40px] rounded-xl border-1 border-gray-300 border-gray-50 p-2"/>
 
-            <button className="h-[48px] bg-blue-400 w-[100%] mx-auto rounded-4xl mt-[30px]">Login</button>
+            <button className="h-[48px] bg-[#2879E4] w-[100%] mx-auto rounded-4xl mt-[30px]">Login</button>
           </form>
         </main>
 
