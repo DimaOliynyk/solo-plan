@@ -1,4 +1,33 @@
+"use client"
+
+import { FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
+
 export default function Login() {
+  const router = useRouter()
+ 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+ 
+    const formData = new FormData(event.currentTarget)
+    const username = formData.get('username')
+    const password = formData.get('password')
+ 
+    const response = await fetch('http://192.168.1.136:3001/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    })
+
+    if (response.ok) {
+      const data = await response.json();
+      localStorage.setItem("token", data.token); 
+      router.push(`/home/${username}`)
+    } else {
+      // Handle errors
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center">
         <header className="justify-items-center">
@@ -10,11 +39,11 @@ export default function Login() {
         </header>
 
         <main className="justify-items-center mt-[50px] h-[100%] bg-white rounded-xl">
-          <form className="w-[330px] flex flex-col w-4\5 p-6">
+          <form className="w-[330px] flex flex-col w-4\5 p-6" onSubmit={handleSubmit}>
             <p className="mb-[10px]">Email</p>
-            <input type="email" placeholder="michael@gmail.com" className="mb-[20px] w-[100%] h-[40px] rounded-xl border-1 border-gray-300 border-gray-50 p-2"/>
+            <input type="name" name="username" placeholder="username" className="mb-[20px] w-[100%] h-[40px] rounded-xl border-1 border-gray-300 border-gray-50 p-2" required/>
             <p className="mb-[10px]">Password</p>
-            <input type="password" placeholder="password" className="mb-[20px] w-[100%] h-[40px] rounded-xl border-1 border-gray-300 border-gray-50 p-2"/>
+            <input type="password" name="password" placeholder="password" className="mb-[20px] w-[100%] h-[40px] rounded-xl border-1 border-gray-300 border-gray-50 p-2" required/>
 
             <button className="h-[48px] bg-[#2879E4] w-[100%] mx-auto rounded-4xl mt-[30px]">Login</button>
           </form>

@@ -1,8 +1,10 @@
 "use client"; 
 
 import { useState } from "react";
+import { FormEvent } from 'react'
+import { useRouter } from 'next/navigation'
 
-export default function newtaskcreate(){
+export default function Newtaskcreate(){
     const [active, setActive] = useState("");
     const [name, setName] = useState("");
     const [details, setDetails] = useState("");
@@ -12,22 +14,56 @@ export default function newtaskcreate(){
     const [duration, setDuration] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const router = useRouter()
+    
+    async function handleNewTask(event: FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+        console.log(222)
+        const formData = new FormData(event.currentTarget)
+        const name = formData.get('name')
+        const details = formData.get('details')
+        const type = active;
+        const projectname = formData.get('projectname')
+        const date = formData.get('date').replaceAll("-", "").slice(6, 8);
+        const time = formData.get('time')
+        const duration = formData.get('duration')
+        
+        const response = await fetch('http://192.168.1.136:3001/api/tasks/', {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem("token")}`
+            },
+          body: JSON.stringify({ name, details, type, projectname, date, time, duration }),
+        })
+    
+        if (response.ok) {
+          const data = await response.json();
+
+          router.push(`/home/${data.author.username}`)
+        } else if(response.status === 401){
+          alert("You can't add task to previous date!")
+        }
+    }
+    
+    
     return(
         <>  
             <div className="mt-[30px] flex flex-row justify-between w-[100%]">
+                <a href="/home/user">back</a>
                 <h3 className="m-auto text-center font-medium text-[22px]">Add task</h3>
             </div>
 
-            <form className="flex flex-col m-auto w-[340px]">
-                <input type="text" onChange={(e) => setName(e.target.value)} placeholder="Task Name" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[28px] pl-[10px] rounded-xl border-gray-400"/>
-                <input type="text" onChange={(e) => setDetails(e.target.value)} placeholder="Task Details (Optional)" className="focus:outline-none w-[340px] h-[70px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+            <form className="flex flex-col m-auto w-[340px]" onSubmit={handleNewTask}>
+                <input type="text" onChange={(e) => setName(e.target.value)} name="name" placeholder="Task Name" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[28px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="text" onChange={(e) => setDetails(e.target.value)} name="details" placeholder="Task Details (Optional)" className="focus:outline-none w-[340px] h-[70px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[20px] text-[18px] font-medium">Task Type</p>
                 <div className="flex justify-between">
                     <button
                         onClick={() => setActive("personal")}
                         type="button"
-                        className={`w-[100px] h-[40px] mt-[15px] px-4 py-2 rounded-3xl font-medium transition-colors duration-200 
+                        className={`w-[160px] h-[40px] mt-[15px] px-4 py-2 rounded-3xl font-medium transition-colors duration-200 
                             ${active === "personal" ? "bg-[#2879E4] text-white" : "bg-gray-200 text-gray-700"}`}
                         >
                         Personal    
@@ -35,33 +71,33 @@ export default function newtaskcreate(){
                     <button
                         onClick={() => setActive("work")}
                         type="button"
-                        className={`w-[100px] h-[40px] mt-[15px] px-4 py-2 rounded-3xl font-medium transition-colors duration-200 
+                        className={`w-[160px] h-[40px] mt-[15px] px-4 py-2 rounded-3xl font-medium transition-colors duration-200 
                             ${active === "work" ? "bg-[#2879E4] text-white" : "bg-gray-200 text-gray-700"}`}
                         >
                         Work    
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => setActive("break")}
                         type="button"
                         className={`w-[100px] h-[40px] mt-[15px] px-4 py-2 rounded-3xl font-medium transition-colors duration-200 
                             ${active === "break" ? "bg-[#2879E4] text-white" : "bg-gray-200 text-gray-700"}`}
                         >
                         Break    
-                    </button>
+                    </button> */}
                 </div>
 
-                <input type="text" onChange={(e) => setProjectname(e.target.value)} placeholder="Project Name" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[20px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="text" onChange={(e) => setProjectname(e.target.value)} name="projectname" placeholder="Project Name" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[20px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[15px] text-[18px] font-medium">Date</p>
-                <input type="text" onChange={(e) => setDate(e.target.value)} placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="date" min={new Date().getDate()} onChange={(e) => setDate(e.target.value)} name="date" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[15px] text-[18px] font-medium">Time</p>
-                <input type="text" onChange={(e) => setTime(e.target.value)} placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="text" onChange={(e) => setTime(e.target.value)} name="time" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[15px] text-[18px] font-medium">Duration</p>
-                <input type="text" onChange={(e) => setDuration(e.target.value)} placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="text" onChange={(e) => setDuration(e.target.value)} name="duration" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
                 
-                <button type="button" className="focus:outline-none w-[340px] h-[50px] m-auto mb-[30px] mt-[40px] pl-[10px] rounded-xl border-gray-400 bg-[#2879E4] text-white">
+                <button className="focus:outline-none w-[340px] h-[50px] m-auto mb-[30px] mt-[40px] pl-[10px] rounded-xl border-gray-400 bg-[#2879E4] text-white">
                     {loading ? "Adding this Task..." : "Add Task"}
                 </button>
             </form>

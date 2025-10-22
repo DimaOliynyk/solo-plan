@@ -25,13 +25,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta
-          name="viewport"
-          content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
-        />
+        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-white w-[400px] m-auto`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 w-[390px] m-auto`}
       >
         {children}
       </body>

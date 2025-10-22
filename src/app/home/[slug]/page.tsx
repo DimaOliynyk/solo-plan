@@ -6,111 +6,216 @@ import Link from 'next/link'
 import { useState, useEffect } from "react";
 
 export default function Home() {
+  const [user, setUser] = useState(null); 
+  const [active, setActive] = useState(new Date().getDate());
+  const [activetasks, setActivetasks] = useState(Number);
+  const [activetasksPersonal, setActivetasksPersonal] = useState(0)
+  const [activetasksWork, setActivetasksWork] = useState(0)
+
+  async function getUser(){
+      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+      })
+
+      if(response.ok){
+        const data = await response.json();
+          
+        let actP = 0
+        let actW = 0
+        data.user.tasks.map((e: Object) => {
+          console.log(222)
+          if(e.type === "personal"){
+            actP = actP + 1
+          } 
+
+          else if(e.type === "work"){
+            actW = actW + 1
+          } 
+        })
+        setActivetasksWork(actW)
+        setActivetasksPersonal(actP)
+        setUser(data.user)
+        console.log(data)
+      }
+  }
+
+  useEffect(() => {
+    getUser()
+  }, []);
+
+
   const [weekDates, setWeekDates] = useState<Date[]>([]);
 
   function getThisWeekDates(): Date[] {
-  const today = new Date();
-  const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
-  
-  // Shift to Monday (change +6 % 7 if your week starts on Monday)
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - ((day + 6) % 7));
+    const today = new Date();
+    setActivetasks(today.getDate())
+    console.log(today.getDate())
+    console.log(activetasks)
+    const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
+    
+    // Shift to Monday (change +6 % 7 if your week starts on Monday)
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((day + 6) % 7));
 
-  // Generate array of 7 dates
-  const weekDates: Date[] = [];
-  for (let i = 0; i < 5; i++) {
-    const d = new Date(monday);
-    d.setDate(monday.getDate() + i);
-    weekDates.push(d);
+    // Generate array of 7 dates
+    const weekDates: Date[] = [];
+    for (let i = 0; i < 5; i++) {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      weekDates.push(d);
+    }
+
+    return weekDates;
   }
 
-  return weekDates;
-}
+  async function deleteTask(id: String){
+      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+      })
 
+      if(response.ok){
+        setUser(user => ({
+          ...user,
+          tasks: user.tasks.filter(task => task.id !== id),
+        }));
+        if(response.task.type === "personal"){
+          setActivetasksPersonal(activetasksPersonal - 1)
+        } 
+        else if(response.task.type === "work"){
+          setActivetasksWork(activetasksWork - 1)
+        } 
+      }
+
+  }
 
 
   useEffect(() => {
     setWeekDates(getThisWeekDates());
   }, []);
 
-  return (
-    <div className="min-h-screen flex flex-col">
-      <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
-        <div className="">
-          <h2 className="font-medium text-[22px] font-medium">Morning, Aria Malik 👋</h2>
-          <p className="font-light text-[15px]">0 tasks are waiting for you today</p>
-        </div>
-        <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
-      </header>
-
-      <main className="ml-[20px] mt-[28px] mr-[20px]">
-        <div>
-          <h3 className="font-medium text-[22px]">Activities</h3>
 
 
-          <div className="flex flex-row justify-between">
-            {weekDates.map((date, idx) => (
-              <div key={idx} className="mt-[12px] w-[65px] h-[80px] bg-[#2879E4] text-white rounded-lg text-center">
-                <p className="pt-[12px] font-extralight uppercase">{date.toLocaleDateString("en-US", { weekday: "short" })}</p>
-                <p className="text-[24px]">{date.getDate()}</p>
-              </div>
-            ))}
+  function formatTimeNumber(time: number): string {
+    const str = time.toString().padStart(4, '0'); // ensure it's 4 digits
+    const hours = str.slice(0, 2);
+    const minutes = str.slice(2);
+    return `${hours}:${minutes}`;
+  }
+
+  if(user){
+    return (
+      <div className="min-h-screen flex flex-col">
+        <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
+          <div className="">
+            <h2 className="font-medium text-[22px] font-medium">Morning, {user.username} 👋</h2>
+            <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you today</p>
           </div>
-        </div>
+          <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
+        </header>
+  
+        <main className="ml-[20px] mt-[28px] mr-[20px]">
+          <div>
+            <h3 className="font-medium text-[22px]">Activities</h3>
+  
+  
+            <div className="flex flex-row justify-between">
+              {weekDates.map((date, idx) => (
+                <button
+                        onClick={() => setActive(date.getDate())}
+                        type="button"
+                        className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
+                            ${active === date.getDate() ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
+                        >
+                        <p className="pt-[5px] font-light uppercase">{date.toLocaleDateString("en-US", { weekday: "short" })}</p>
+                        <p className="pt-[0] text-[24px]">{date.getDate()}</p>
+                </button>
 
-        <div className="mt-[28px]">
-          <h3 className="font-medium text-[22px]">Category</h3>
-          
-          <div className="flex flex-row justify-between mt-[20px]">
-            <div className="w-[160px] h-[140px] bg-white rounded-md ml-[15px] flex flex-row justify-between">
-              <div className="ml-[15px]">
-                <p className="text-[19px] w-[80px]">Personal To-do</p>
-                <p className="text-[12px] text-black opacity-60 mb-[30px]">12 Tasks remaining</p>
-
-                {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
-              </div>
-              <Image src="/coffeecup.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px]" alt=""/>
-            </div>
-
-            <div className="w-[160px] h-[140px] bg-white rounded-md mr-[15px] flex flex-row justify-between ml-[10px]" >
-              <div className="ml-[15px]">
-                <p className="text-[19px] w-[70px]">Work To-do</p>
-                <p className="text-[12px] text-black opacity-60 mb-[30px]">0 Tasks remaining</p>
-
-                {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
-              </div>
-              <Image src="/suitcase.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px]" alt=""/>
+              ))}
             </div>
           </div>
-        </div>
-
-        <div className="mt-[25px]">
-          <div className="flex flex-row justify-between">
-            <h3 className="font-medium text-[22px]">Daily task View</h3>
-            {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
+  
+          <div className="mt-[28px]">
+            <h3 className="font-medium text-[22px]">Category</h3>
+            
+            <div className="flex flex-row justify-between mt-[20px]">
+              <div className="w-[175px] h-[110px] bg-white rounded-md ml-[0] flex flex-row justify-between">
+                <div className="ml-[15px] mt-[15px]">
+                  <p className="text-[19px] w-[80px]">Personal To-do</p>
+                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{activetasksPersonal} Tasks remaining</p>
+  
+                  {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
+                </div>
+                <Image src="/coffeecup.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px] mt-[15px]" alt=""/>
+              </div>
+  
+              <div className="w-[175px] h-[110px] bg-white rounded-md mr-[0] flex flex-row justify-between ml-[10px]" >
+                <div className="ml-[15px] mt-[15px]">
+                  <p className="text-[19px] w-[70px]">Work To-do</p>
+                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{activetasksWork} Tasks remaining</p>
+  
+                  {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
+                </div>
+                <Image src="/suitcase.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px] mt-[15px]" alt=""/>
+              </div>
+            </div>
           </div>
+  
+          <div className="mt-[25px]">
+            <div className="flex flex-col justify-between">
+              <h3 className="font-medium text-[22px]">Daily task View</h3>
 
-          <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[40px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium">Add New Task</Link>
-        </div>
-      </main>
+              <div className="m-auto flex flex-col mt-[25px]">
+                {user.tasks.map((e) => {
+                  const date = String(e.date)[0] + String(e.date)[1]
+                  if(Number(date) === active){
+                    return(
+                      <div className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
+                        <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
 
-      <footer className="w-[100%] fixed bottom-0 left-0 w-full pb-[25px] flex flex-row justify-between mt-auto">
-        {/* <a href="/home/userid" className="mt-[20px]">
-          <Image width={24} height={25} src="/homepage-active-icon.png" className="ml-[35px]" alt=""/>
-        </a>
-        <a href={`/schedule/userid`} className=" mt-[20px]">
-           <Image width={24} height={25} src="/calendar.png" className="" alt=""/>
-        </a> */}
+                        </div>
+                        <div className="pl-[20px] w-[100%]">
 
-        <button className="w-[60px] h-[60px] rounded-[50%] bg-[#2879E4] text-[35px] text-white">+</button>
+                          <div className="flex flex-row justify-between">
+                            <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
+                            <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
+                          </div>
+                          <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
+    
+                          <div className="flex flex-row mt-[10px]">
+                            <div>
+                              <p>Start Time</p>
+                              <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                            </div>
+                            <div className="ml-[40px]">
+                              <p>Duration</p>
+                              <p className="text-gray-500">{e.duration} Minutes</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  }
+                })}
+              </div>
+              {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
+            </div>
+  
+            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[50px]">Add New Task</Link>
+          </div>
+        </main>
+  
+        <footer className="w-[100%] fixed bottom-0 left-0 w-full pb-[25px] flex flex-row justify-between mt-auto">
 
-        {/* <a href="#" className="mt-[20px]">
-           <Image width={24} height={25} src="/profile.png" className="" alt=""/>
-        </a>
-        <a href="#" className="mr-[35px] mt-[20px]">
-           <Image width={24} height={25} src="/messages.png" className="" alt=""/>
-        </a> */}
-      </footer>
-    </div>
-  );
+        </footer>
+      </div>
+    );
+  }
 }
