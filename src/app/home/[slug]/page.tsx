@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(Object); 
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
@@ -82,14 +82,16 @@ export default function Home() {
       })
 
       if(response.ok){
+        const data = await response.json();
+        
         setUser(user => ({
-          ...user,
+          ...(user ?? {}),
           tasks: user.tasks.filter(task => task.id !== id),
         }));
-        if(response.task.type === "personal"){
+        if(data.task.type === "personal"){
           setActivetasksPersonal(activetasksPersonal - 1)
         } 
-        else if(response.task.type === "work"){
+        else if(data.task.type === "work"){
           setActivetasksWork(activetasksWork - 1)
         } 
       }
@@ -176,7 +178,7 @@ export default function Home() {
               <h3 className="font-medium text-[22px]">Daily task View</h3>
 
               <div className="m-auto flex flex-col mt-[25px]">
-                {user.tasks.sort((a, b) => new Date(a.time) - new Date(b.time)).map((e) => {
+                {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
                   const date = String(e.date)[0] + String(e.date)[1]
                   if(Number(date) === active){
                     return(

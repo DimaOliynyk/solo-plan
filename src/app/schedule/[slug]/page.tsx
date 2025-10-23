@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 
 export default function Schedule(){
-      const [user, setUser] = useState(null); 
+      const [user, setUser] = useState(Object); 
     const [active, setActive] = useState(new Date().getDate());
     const [weekDates, setWeekDates] = useState<Date[]>([]);
     const [activetasks, setActivetasks] = useState(Number);
@@ -28,7 +28,7 @@ export default function Schedule(){
           
         let actP = 0
         let actW = 0
-        data.user.tasks.map((e: object) => {
+        data.user.tasks.map((e) => {
           console.log(222)
           if(e.type === "personal"){
             actP = actP + 1
@@ -69,28 +69,30 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-        const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
-            method: 'DELETE',
-            headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem("token")}`
-            },
-        })
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+      })
 
-        if(response.ok){
-            setUser(user => ({
-            ...user,
-            tasks: user.tasks.filter(task => task.id !== id),
-            }));
-            if(response.task.type === "personal"){
-            setActivetasksPersonal(activetasksPersonal - 1)
-            } 
-            else if(response.task.type === "work"){
-            setActivetasksWork(activetasksWork - 1)
-            } 
-        }
+      if(response.ok){
+        const data = await response.json();
+        
+        setUser(user => ({
+          ...(user ?? {}),
+          tasks: user.tasks.filter(task => task.id !== id),
+        }));
+        if(data.task.type === "personal"){
+          setActivetasksPersonal(activetasksPersonal - 1)
+        } 
+        else if(data.task.type === "work"){
+          setActivetasksWork(activetasksWork - 1)
+        } 
+      }
 
-    }
+  }
 
 
     function formatTimeNumber(time: number): string {
@@ -136,7 +138,7 @@ export default function Schedule(){
     
     
                        <div className="m-auto flex flex-col mt-[25px]">
-                            {user.tasks.sort((a, b) => new Date(a.time) - new Date(b.time)).map((e) => {
+                            {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
                             const date = String(e.date)[0] + String(e.date)[1]
                             if(Number(date) === active){
                                 return(

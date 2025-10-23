@@ -26,7 +26,8 @@ export default function Newtaskcreate(){
         const details = formData.get('details')
         const type = active;
         const projectname = formData.get('projectname')
-        const date = formData.get('date').replaceAll("-", "").slice(6, 8);
+        const dateValue = formData.get('date');
+        const date = dateValue ? dateValue.toString().replaceAll("-", "").slice(6, 8) : "";
         const time = formData.get('time')
         const duration = formData.get('duration')
         
