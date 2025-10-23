@@ -14,7 +14,7 @@ export default function Signup() {
         const username = formData.get('username')
         const password = formData.get('password')
      
-        const response = await fetch('http://192.168.1.136:3001/api/auth/login', {
+        const response = await fetch('https://solo-plan-server.onrender.com/api/auth/login', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ username, password }),

@@ -1,3 +1,8 @@
+"use client"
+
+import Link from 'next/link';
+
+
 export default function Profile(){
     return(
         <>
@@ -60,19 +65,19 @@ export default function Profile(){
             </main>
 
             <footer className="w-[390px] h-[100px] bg-white rounded-t-xl justify-between flex flex-row m-auto pt-[20px] pb-[10px]">
-                <a href="/home/user" className="ml-[20px]">
+                <Link href="/home/user" className="ml-[20px]">
                     <img src="/house.png" className="w-[30px] h-[30px]"/>
                     <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
-                </a>
-                <a href="/schedule/user" className="">
+                </Link>
+                <Link href="/schedule/user" className="">
                     <img src="/calendar.png" className="w-[30px] h-[30px]"/>
-                </a>
-                <a className="">
+                </Link>
+                <Link href="#" className="">
                     <img src="/chat.png" className="w-[30px] h-[30px]"/>
-                </a>
-                <a href="/profile/user" className="mr-[20px]">
+                </Link>
+                <Link href="/profile/user" className="mr-[20px]">
                     <img src="/user.png" className="w-[30px] h-[30px]"/>
-                </a>
+                </Link>
             </footer>
         </>
 

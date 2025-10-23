@@ -1,5 +1,7 @@
 "use client"; 
 
+import Link from 'next/link';
+
 import { useState } from "react";
 import { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
@@ -28,7 +30,7 @@ export default function Newtaskcreate(){
         const time = formData.get('time')
         const duration = formData.get('duration')
         
-        const response = await fetch('http://192.168.1.136:3001/api/tasks/', {
+        const response = await fetch('https://solo-plan-server.onrender.com/api/tasks/', {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
@@ -50,7 +52,7 @@ export default function Newtaskcreate(){
     return(
         <>  
             <div className="mt-[30px] flex flex-row justify-between w-[100%]">
-                <a href="/home/user">back</a>
+                <Link href="/home/user">back</Link>
                 <h3 className="m-auto text-center font-medium text-[22px]">Add task</h3>
             </div>
 

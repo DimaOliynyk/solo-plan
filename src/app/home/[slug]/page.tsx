@@ -11,9 +11,9 @@ export default function Home() {
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
   const [activetasksWork, setActivetasksWork] = useState(0)
-  let [activetaskstoday, setActivetaskstoday] = useState(Number);
+  const [activetaskstoday, setActivetaskstoday] = useState(Number);
   async function getUser(){
-      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
+      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -26,7 +26,7 @@ export default function Home() {
           
         let actP = 0
         let actW = 0
-        data.user.tasks.map((e: Object) => {
+        data.user.tasks.map((e: object) => {
           console.log(222)
           if(e.type === "personal"){
             actP = actP + 1
@@ -72,8 +72,8 @@ export default function Home() {
     return weekDates;
   }
 
-  async function deleteTask(id: String){
-      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}`, {
+  async function deleteTask(id: string){
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -118,9 +118,9 @@ export default function Home() {
             <h2 className="font-medium text-[22px] font-medium">Morning, {user.username} 👋</h2>
             <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
           </div>
-          <a href="/profile/user">
+          <Link href="/profile/user">
             <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
-          </a>
+          </Link>
         </header>
   
         <main className="ml-[20px] mt-[28px] mr-[20px]">
@@ -131,6 +131,7 @@ export default function Home() {
             <div className="flex flex-row justify-between">
               {weekDates.map((date, idx) => (
                 <button
+                        key={idx}
                         onClick={() => setActive(date.getDate())}
                         type="button"
                         className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
@@ -179,7 +180,7 @@ export default function Home() {
                   const date = String(e.date)[0] + String(e.date)[1]
                   if(Number(date) === active){
                     return(
-                      <div className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
+                      <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
                         <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
 
                         </div>
@@ -215,19 +216,19 @@ export default function Home() {
         </main>
   
         <footer className="w-[390px] h-[100px] bg-white rounded-t-xl justify-between flex flex-row m-auto pt-[20px] pb-[10px]">
-          <a href="/home/user" className="ml-[20px]">
+          <Link href="/home/user" className="ml-[20px]">
             <img src="/house.png" className="w-[30px] h-[30px]"/>
             <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
-          </a>
-          <a href="/schedule/user" className="">
+          </Link>
+          <Link href="/schedule/user" className="">
             <img src="/calendar.png" className="w-[30px] h-[30px]"/>
-          </a>
-          <a className="">
+          </Link>
+          <Link href="#" className="">
             <img src="/chat.png" className="w-[30px] h-[30px]"/>
-          </a>
-          <a href="/profile/user" className="mr-[20px]">
+          </Link>
+          <Link href="/profile/user" className="mr-[20px]">
             <img src="/user.png" className="w-[30px] h-[30px]"/>
-          </a>
+          </Link>
         </footer>
       </div>
     );
