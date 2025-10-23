@@ -26,7 +26,7 @@ export default function Home() {
           
         let actP = 0
         let actW = 0
-        data.user.tasks.map((e: object) => {
+        data.user.tasks.map((e) => {
           console.log(222)
           if(e.type === "personal"){
             actP = actP + 1
