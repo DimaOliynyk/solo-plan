@@ -117,7 +117,7 @@ export default function Login() {
         </div>
 
         <p className="text-sm text-center mb-[20px]">
-          Don't have account? <a href="#">Sign Up</a>
+          Don&#39;t have account? <a href="#">Sign Up</a>
         </p>
       </footer>
     </div>
