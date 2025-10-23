@@ -11,7 +11,7 @@ export default function Home() {
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
   const [activetasksWork, setActivetasksWork] = useState(0)
-
+  let [activetaskstoday, setActivetaskstoday] = useState(Number);
   async function getUser(){
       const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
         method: 'GET',
@@ -112,13 +112,15 @@ export default function Home() {
 
   if(user){
     return (
-      <div className="min-h-screen flex flex-col">
+      <div className=" flex flex-col">
         <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
           <div className="">
             <h2 className="font-medium text-[22px] font-medium">Morning, {user.username} 👋</h2>
-            <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you today</p>
+            <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
           </div>
-          <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
+          <a href="/profile/user">
+            <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
+          </a>
         </header>
   
         <main className="ml-[20px] mt-[28px] mr-[20px]">
@@ -173,7 +175,7 @@ export default function Home() {
               <h3 className="font-medium text-[22px]">Daily task View</h3>
 
               <div className="m-auto flex flex-col mt-[25px]">
-                {user.tasks.map((e) => {
+                {user.tasks.sort((a, b) => new Date(a.time) - new Date(b.time)).map((e) => {
                   const date = String(e.date)[0] + String(e.date)[1]
                   if(Number(date) === active){
                     return(
@@ -208,12 +210,24 @@ export default function Home() {
               {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
             </div>
   
-            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[50px]">Add New Task</Link>
+            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[30px]">Add New Task</Link>
           </div>
         </main>
   
-        <footer className="w-[100%] fixed bottom-0 left-0 w-full pb-[25px] flex flex-row justify-between mt-auto">
-
+        <footer className="w-[390px] h-[100px] bg-white rounded-t-xl justify-between flex flex-row m-auto pt-[20px] pb-[10px]">
+          <a href="/home/user" className="ml-[20px]">
+            <img src="/house.png" className="w-[30px] h-[30px]"/>
+            <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
+          </a>
+          <a href="/schedule/user" className="">
+            <img src="/calendar.png" className="w-[30px] h-[30px]"/>
+          </a>
+          <a className="">
+            <img src="/chat.png" className="w-[30px] h-[30px]"/>
+          </a>
+          <a href="/profile/user" className="mr-[20px]">
+            <img src="/user.png" className="w-[30px] h-[30px]"/>
+          </a>
         </footer>
       </div>
     );
