@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 
 
 export default function Schedule(){
-      const [user, setUser] = useState(null); 
+      const [user, setUser] = useState(Object); 
     const [active, setActive] = useState(new Date().getDate());
     const [weekDates, setWeekDates] = useState<Date[]>([]);
     const [activetasks, setActivetasks] = useState(Number);

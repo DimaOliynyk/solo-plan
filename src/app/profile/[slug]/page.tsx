@@ -28,7 +28,7 @@ export default function Profile(){
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(String);
     const [modalType, setModalType] = useState(String);
-    const [user, setUser] = useState(null); 
+    const [user, setUser] = useState(Object); 
 
     const router = useRouter();
     

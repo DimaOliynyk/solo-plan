@@ -6,7 +6,7 @@ import Link from 'next/link'
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [user, setUser] = useState(null); 
+  const [user, setUser] = useState(Object); 
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
