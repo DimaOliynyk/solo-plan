@@ -15,7 +15,7 @@ export default function Schedule(){
     const [activetasksWork, setActivetasksWork] = useState(0)
 
       async function getUser(){
-      const response = await fetch('https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/me', {
+      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/tasks/${id}`, {
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

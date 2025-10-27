@@ -50,7 +50,7 @@ export default function Newtaskcreate(){
 
         console.log(time)
         try {
-            const response = await fetch('https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/tasks/', {
+            const response = await fetch('https://solo-plan-server.onrender.com/api/tasks/', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',

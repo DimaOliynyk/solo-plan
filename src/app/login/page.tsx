@@ -17,7 +17,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/google";
+    window.location.href = "https://solo-plan-server.onrender.com/api/auth/google";
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -28,7 +28,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/login",
+      "https://solo-plan-server.onrender.com/api/auth/login",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
