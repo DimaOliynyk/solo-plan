@@ -112,7 +112,7 @@ export default function Home() {
     return `${hours}:${minutes}`;
   }
 
-  if(user){
+  if(Object.keys(user).length !== 0){
     return (
       <div className=" flex flex-col">
         <header className="flex flex-row ml-[20px] pt-[40px] justify-between">

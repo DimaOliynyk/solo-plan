@@ -66,7 +66,7 @@ export default function Profile(){
         getUser()
     }, []);
 
-    if(user){
+    if(Object.keys(user).length !== 0){
         return(
             <>
                 <header className="flex flex-row w-[390px] pt-[40px] pb-[40px]">

@@ -107,7 +107,7 @@ export default function Schedule(){
          getUser() 
     }, []);
 
-    if(user){
+    if(Object.keys(user).length !== 0){
 
         return(
             <div className="flex flex-col min-h-screen">
