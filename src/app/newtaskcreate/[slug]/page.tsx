@@ -36,18 +36,6 @@ export default function Newtaskcreate(){
         const durationValue = formData.get("duration") as string | null;
         const duration = durationValue ? Number(durationValue) : 0;
 
-          if (
-            typeof name !== "string" ||
-            typeof details !== "string" ||
-            typeof projectname !== "string" ||
-            typeof date !== "number" ||
-            typeof time !== "number" ||
-            typeof duration !== "number"
-        ) {
-            alert("Form contains invalid values! Please check all fields.");
-            return; 
-        }
-
         console.log(time)
         try {
             const response = await fetch('https://solo-plan-server.onrender.com/api/tasks/', {
