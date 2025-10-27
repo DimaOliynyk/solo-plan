@@ -22,32 +22,58 @@ export default function Newtaskcreate(){
         event.preventDefault()
         console.log(222)
         const formData = new FormData(event.currentTarget)
-        const name = formData.get('name')
-        const details = formData.get('details')
+        const name = (formData.get('name') ?? '') as string;
+        const details = (formData.get('details') ?? '') as string;
         const type = active;
-        const projectname = formData.get('projectname')
-        const dateValue = formData.get('date');
-        const date = dateValue ? dateValue.toString().replaceAll("-", "").slice(6, 8) : "";
-        const time = formData.get('time')
-        const duration = formData.get('duration')
-        
-        const response = await fetch('https://solo-plan-server.onrender.com/api/tasks/', {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem("token")}`
-            },
-          body: JSON.stringify({ name, details, type, projectname, date, time, duration }),
-        })
-    
-        if (response.ok) {
-          const data = await response.json();
+        const projectname = (formData.get('projectname') ?? '') as string;
 
-          router.push(`/home/${data.author.username}`)
-        } else if(response.status === 401){
-          alert("You can't add task to previous date!")
+        const dateValue = formData.get("date") as string | null;
+        const date = dateValue ? Number(dateValue.replaceAll("-", "").slice(6, 8)) : 0; 
+
+        const timeValue = formData.get("time") as string | null;
+        const time = timeValue ? timeValue.replace(":", "") : "";
+
+        const durationValue = formData.get("duration") as string | null;
+        const duration = durationValue ? Number(durationValue) : 0;
+
+          if (
+            typeof name !== "string" ||
+            typeof details !== "string" ||
+            typeof projectname !== "string" ||
+            typeof date !== "number" ||
+            typeof time !== "number" ||
+            typeof duration !== "number"
+        ) {
+            alert("Form contains invalid values! Please check all fields.");
+            return; 
         }
-    }
+
+        console.log(time)
+        try {
+            const response = await fetch('https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/tasks/', {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem("token")}`
+                },
+              body: JSON.stringify({ name, details, type, projectname, date, time, duration }),
+            })
+        
+            if (response.ok) {
+              const data = await response.json();
+    
+              router.push(`/home/${data.author.username}`)
+            } else if(response.status === 402){
+              alert("You can't add task to previous date!")
+            } else {
+                alert("Something went wrong while adding the task.");
+            }   
+        } catch (error) {
+            console.error("Error submitting task:", error);
+            alert("Network error. Please try again later.");
+        }
+    } 
+
     
     
     return(
@@ -59,7 +85,7 @@ export default function Newtaskcreate(){
 
             <form className="flex flex-col m-auto w-[340px]" onSubmit={handleNewTask}>
                 <input type="text" onChange={(e) => setName(e.target.value)} name="name" placeholder="Task Name" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[28px] pl-[10px] rounded-xl border-gray-400"/>
-                <input type="text" onChange={(e) => setDetails(e.target.value)} name="details" placeholder="Task Details (Optional)" className="focus:outline-none w-[340px] h-[70px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <textarea onChange={(e) => setDetails(e.target.value)} name="details" placeholder="Task Details (Optional)" className="focus:outline-none w-[340px] h-[70px] border-1 active:border-gray-400 m-auto mt-[15px] pt-[10px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[20px] text-[18px] font-medium">Task Type</p>
                 <div className="flex justify-between">
@@ -95,10 +121,10 @@ export default function Newtaskcreate(){
                 <input type="date" min={new Date().getDate()} onChange={(e) => setDate(e.target.value)} name="date" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[15px] text-[18px] font-medium">Time</p>
-                <input type="text" onChange={(e) => setTime(e.target.value)} name="time" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="time" onChange={(e) => setTime(e.target.value)} name="time" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
 
                 <p className="mt-[15px] text-[18px] font-medium">Duration</p>
-                <input type="text" onChange={(e) => setDuration(e.target.value)} name="duration" placeholder="5 April, 2025" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
+                <input type="text" onChange={(e) => setDuration(e.target.value)} name="duration" placeholder="30 (Minutes)" className="focus:outline-none w-[340px] h-[40px] border-1 active:border-gray-400 m-auto mt-[15px] pl-[10px] rounded-xl border-gray-400"/>
                 
                 <button className="focus:outline-none w-[340px] h-[50px] m-auto mb-[30px] mt-[40px] pl-[10px] rounded-xl border-gray-400 bg-[#2879E4] text-white">
                     {loading ? "Adding this Task..." : "Add Task"}

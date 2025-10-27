@@ -15,6 +15,11 @@ export default function Login() {
     setLoading(false);
   }, []);
 
+  const handleGoogleLogin = () => {
+    // Redirect user to backend Google login
+    window.location.href = "https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/google";
+  };
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
@@ -23,7 +28,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "https://solo-plan-server.onrender.com/api/auth/login",
+      "https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/login",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -101,7 +106,7 @@ export default function Login() {
         <div className="mb-[30px]">
           <p className="text-center mt-[30px] text-[18px] font-medium">Or Login with</p>
           <div className="flex flex-row mt-[20px]">
-            <div className="w-[80px] h-[60px] border-1 m-auto mr-[10px] border-gray-300 rounded-xl">
+            <div className="w-[80px] h-[60px] border-1 m-auto mr-[10px] border-gray-300 rounded-xl" onClick={handleGoogleLogin}>
               <img
                 src="./google-icon-logo-svgrepo-com.svg"
                 className="w-[30px] m-auto mt-[13px]"

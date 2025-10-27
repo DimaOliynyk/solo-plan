@@ -6,14 +6,14 @@ import Link from 'next/link'
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [user, setUser] = useState(Object); 
+  const [user, setUser] = useState(null); 
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
   const [activetasksWork, setActivetasksWork] = useState(0)
   const [activetaskstoday, setActivetaskstoday] = useState(Number);
   async function getUser(){
-      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
+      const response = await fetch('https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export default function Home() {
   }
 
   async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+      const response = await fetch(`https://solo-plan-server-9hl58r2nj-dmytros-projects-32c8df75.vercel.app/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +125,7 @@ export default function Home() {
           </Link>
         </header>
   
-        <main className="ml-[20px] mt-[28px] mr-[20px]">
+        <main className="ml-[20px] mb-[20px] mt-[28px] mr-[20px]">
           <div>
             <h3 className="font-medium text-[22px]">Activities</h3>
   
@@ -213,11 +213,11 @@ export default function Home() {
               {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
             </div>
   
-            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[30px]">Add New Task</Link>
+            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[50px]">Add New Task</Link>
           </div>
         </main>
   
-        <footer className="w-[390px] h-[100px] bg-white rounded-t-xl justify-between flex flex-row m-auto pt-[20px] pb-[10px]">
+        <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between fixed bottom-0 flex flex-row m-auto pt-[15px] pb-[10px]">
           <Link href="/home/user" className="ml-[20px]">
             <img src="/house.png" className="w-[30px] h-[30px]"/>
             <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
