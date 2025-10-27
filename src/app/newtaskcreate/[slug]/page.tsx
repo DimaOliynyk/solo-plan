@@ -32,7 +32,7 @@ export default function Newtaskcreate(){
 
         const timeValue = formData.get("time") as string | null;
         const time = timeValue ? timeValue.replace(":", "") : "";
-
+        
         const durationValue = formData.get("duration") as string | null;
         const duration = durationValue ? Number(durationValue) : 0;
 

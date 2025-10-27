@@ -1,20 +1,27 @@
 import type { NextConfig } from "next";
+import withPWA from "next-pwa";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  reactStrictMode: true,
 
-// next.config.js
-module.exports = {
   async redirects() {
     return [
       {
         source: '/',
         destination: '/login',
-        permanent: true, // or true for permanent 308
+        permanent: true, // 308 permanent redirect
       },
     ];
   },
 };
 
-export default nextConfig;
+// Wrap your Next.js config with `withPWA`
+export default withPWA({
+  ...nextConfig,
+  pwa: {
+    dest: 'public',
+    register: true,
+    skipWaiting: true,
+    disable: process.env.NODE_ENV === 'development',
+  },
+});
