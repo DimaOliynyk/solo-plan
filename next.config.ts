@@ -13,9 +13,15 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+
+  // Make sure this is here for next/image
+  images: {
+    domains: ['cdn.pixabay.com'],
+  },
 };
 
 // Wrap your Next.js config with `withPWA`
+// Pass `disable` as a boolean, not a string
 export default withPWA({
   ...nextConfig,
   pwa: {

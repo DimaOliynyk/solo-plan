@@ -47,7 +47,7 @@ export default function Profile(){
 
 
       async function getUser(){
-      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
+      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +70,7 @@ export default function Profile(){
         return(
             <>
                 <header className="flex flex-row w-[390px] pt-[40px] pb-[40px]">
-                    <img src="/user-pr-pc-default.png" className="ml-[15px] mr-[10px]"/>
+                    <img src={user.avatarUrl} className="ml-[15px] mr-[10px] w-[50px] h-[50px] rounded-2xl"/>
                     <div className="flex flex-col ml-[10px]">
                         <p className='capitalize' onClick={() => {handleClick('username')}}>{user.username}</p>
                         <p onClick={() => {handleClick('work')}}>Illustrator Freelancer</p>

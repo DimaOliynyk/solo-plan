@@ -17,7 +17,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "https://solo-plan-server.onrender.com/api/auth/google";
+    window.location.href = "http://192.168.1.136:3001/api/auth/google";
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -28,7 +28,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "https://solo-plan-server.onrender.com/api/auth/login",
+      "http://192.168.1.136:3001/api/auth/login",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -122,7 +122,7 @@ export default function Login() {
         </div>
 
         <p className="text-sm text-center mb-[20px]">
-          Don&#39;t have account? <a href="#">Sign Up</a>
+          Don&#39;t have account? <a href="/signup" className="text-blue-500">Sign Up</a>
         </p>
       </footer>
     </div>

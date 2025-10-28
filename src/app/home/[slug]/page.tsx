@@ -13,7 +13,7 @@ export default function Home() {
   const [activetasksWork, setActivetasksWork] = useState(0)
   const [activetaskstoday, setActivetaskstoday] = useState(Number);
   async function getUser(){
-      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
+      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export default function Home() {
   }
 
   async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -98,6 +98,33 @@ export default function Home() {
 
   }
 
+  async function makeTaskComplete(id: string){
+      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}/complete`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+      })
+
+      if(response.ok){
+        const data = await response.json();
+        
+        setUser(user => ({
+          ...(user ?? {}),
+          tasks: user.tasks.filter(task => task.id !== id),
+        }));
+
+        if(data.task.type === "personal"){
+          setActivetasksPersonal(activetasksPersonal - 1)
+        } 
+        else if(data.task.type === "work"){
+          setActivetasksWork(activetasksWork - 1)
+        } 
+      }
+
+  }
+  
 
   useEffect(() => {
     setWeekDates(getThisWeekDates());
@@ -121,7 +148,7 @@ export default function Home() {
             <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
           </div>
           <Link href="/profile/user">
-            <Image src="/user-pr-pc-default.png" width={50} height={50} className="w-[50px] h-[50px] mr-[20px]"alt="user-profile-picture"/>
+            <img src={user.avatarUrl} width={50} height={50} className="w-[50px] h-[50px] mr-[20px] mt-[5px] rounded-2xl"alt="user-profile-picture"/>
           </Link>
         </header>
   
@@ -180,33 +207,36 @@ export default function Home() {
               <div className="m-auto flex flex-col mt-[25px]">
                 {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
                   const date = String(e.date)[0] + String(e.date)[1]
-                  if(Number(date) === active){
-                    return(
-                      <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
-                        <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
-
-                        </div>
-                        <div className="pl-[20px] w-[100%]">
-
-                          <div className="flex flex-row justify-between">
-                            <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                            <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
+                  if(!e.isCompleted){
+                    if(Number(date) === active){
+                      return(
+                        <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
+                          <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
+  
                           </div>
-                          <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
-    
-                          <div className="flex flex-row mt-[10px]">
-                            <div>
-                              <p>Start Time</p>
-                              <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                          <div className="pl-[20px] w-[100%]">
+  
+                            <div className="flex flex-row justify-between">
+                              <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
+                              <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
                             </div>
-                            <div className="ml-[40px]">
-                              <p>Duration</p>
-                              <p className="text-gray-500">{e.duration} Minutes</p>
-                            </div>
+                            <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
+      
+                            <div className="flex flex-row mt-[10px]">
+                              <div>
+                                <p>Start Time</p>
+                                <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                              </div>
+                              <div className="ml-[40px]">
+                                <p>Duration</p>
+                                <p className="text-gray-500">{e.duration} Minutes</p>
+                              </div>
+                              <img src="/check.png" className="w-[30px] h-[30px] ml-[90px] mt-[20px]" onClick={() => makeTaskComplete(e.id)}/>
+                            </div> 
                           </div>
                         </div>
-                      </div>
-                    )
+                      )
+                  }
                   }
                 })}
               </div>

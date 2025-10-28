@@ -15,7 +15,7 @@ export default function Schedule(){
     const [activetasksWork, setActivetasksWork] = useState(0)
 
       async function getUser(){
-      const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
+      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -94,6 +94,26 @@ export default function Schedule(){
 
   }
 
+    async function makeTaskUnComplete(id: string){
+      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}/complete`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem("token")}`
+        },
+      })
+
+      if(response.ok){
+        const data = await response.json();
+        
+        setUser(user => ({
+          ...(user ?? {}),
+          tasks: user.tasks.filter(task => task.id !== id),
+        }));
+
+      }
+
+  }
 
     function formatTimeNumber(time: number): string {
         const str = time.toString().padStart(4, '0'); // ensure it's 4 digits
@@ -140,39 +160,42 @@ export default function Schedule(){
                        <div className="m-auto flex flex-col mt-[25px]">
                             {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
                             const date = String(e.date)[0] + String(e.date)[1]
-                            if(Number(date) === active){
-                                return(
-                                <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
-                                    <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
-    
-                                    </div>
-                                    <div className="pl-[20px] w-[100%]">
-    
-                                    <div className="flex flex-row justify-between">
-                                        <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                                        <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
-                                    </div>
-                                    <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
-                
-                                    <div className="flex flex-row mt-[10px]">
-                                        <div>
-                                        <p>Start Time</p>
-                                        <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
-                                        </div>
-                                        <div className="ml-[40px]">
-                                        <p>Duration</p>
-                                        <p className="text-gray-500">{e.duration} Minutes</p>
-                                        </div>
-                                    </div>
-                                    </div>
-                                </div>
-                                )
+                            if(e.isCompleted === true){
+                              if(Number(date) === active){
+                                  return(
+                                  <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
+                                      <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
+      
+                                      </div>
+                                      <div className="pl-[20px] w-[100%]">
+      
+                                      <div className="flex flex-row justify-between">
+                                          <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
+                                          <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
+                                      </div>
+                                      <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
+                  
+                                      <div className="flex flex-row mt-[10px]">
+                                          <div>
+                                          <p>Start Time</p>
+                                          <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                                          </div>
+                                          <div className="ml-[40px]">
+                                          <p>Duration</p>
+                                          <p className="text-gray-500">{e.duration} Minutes</p>
+                                          </div>
+                                          <img src="/cross.png" className="w-[30px] h-[30px] ml-[90px] mt-[20px]" onClick={() => makeTaskUnComplete(e.id)}/>
+                                      </div>
+                                      </div>
+                                  </div>
+                                  )
+                              }
                             }
                             })}
                         </div>
                     </div>
                 </main>
-                <footer className="w-[390px] h-[100px] bg-white rounded-t-xl justify-between flex flex-row m-auto pt-[20px] pb-[10px] bottom-0">
+                <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between fixed bottom-0 flex flex-row m-auto pt-[15px] pb-[10px]">
                     <Link href="/home/user" className="ml-[20px]">
                         <img src="/house.png" className="w-[30px] h-[30px]"/>
                         <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
