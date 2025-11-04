@@ -17,7 +17,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "http://192.168.1.136:3001/api/auth/google";
+    window.location.href = "http://localhost:3001/api/auth/google";
   };
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -28,7 +28,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "http://192.168.1.136:3001/api/auth/login",
+      "http://localhost:3001/api/auth/login",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

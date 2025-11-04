@@ -15,7 +15,7 @@ export default function Schedule(){
     const [activetasksWork, setActivetasksWork] = useState(0)
 
       async function getUser(){
-      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
+      const response = await fetch('http://localhost:3001/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -69,7 +69,7 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}`, {
+      const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +95,7 @@ export default function Schedule(){
   }
 
     async function makeTaskUnComplete(id: string){
-      const response = await fetch(`http://192.168.1.136:3001/api/tasks/${id}/complete`, {
+      const response = await fetch(`http://localhost:3001/api/tasks/${id}/complete`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

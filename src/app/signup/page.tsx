@@ -24,7 +24,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "http://192.168.1.136:3001/api/auth/register",
+      "http://localhost:3001/api/auth/register",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

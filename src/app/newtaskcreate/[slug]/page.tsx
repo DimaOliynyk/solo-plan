@@ -38,7 +38,7 @@ export default function Newtaskcreate(){
 
         console.log(time)
         try {
-            const response = await fetch('http://192.168.1.136:3001/api/tasks/', {
+            const response = await fetch('http://localhost:3001/api/tasks/', {
               method: 'POST',
               headers: { 
                 'Content-Type': 'application/json',

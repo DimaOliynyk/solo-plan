@@ -47,7 +47,7 @@ export default function Profile(){
 
 
       async function getUser(){
-      const response = await fetch('http://192.168.1.136:3001/api/auth/me', {
+      const response = await fetch('http://localhost:3001/api/auth/me', {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
