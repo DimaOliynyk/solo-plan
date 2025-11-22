@@ -6,7 +6,17 @@ import { useState } from "react";
 import { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
 
-
+interface Task {
+  id?: number;          // optional for new tasks
+  name: string;
+  details?: string;
+  type: string;         // e.g., active tab or category
+  projectname?: string;
+  date?: string;
+  time?: string;
+  duration?: string;
+  completed?: boolean;
+}
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Newtaskcreate(){
@@ -23,7 +33,7 @@ export default function Newtaskcreate(){
     const queryClient = useQueryClient();
     
     const addTaskMutation = useMutation({
-      mutationFn: async (newTask: any) => {
+      mutationFn: async (newTask: Task) => {
         const response = await fetch("https://solo-plan-server.onrender.com/api/tasks/", {
           method: "POST",
           headers: {
@@ -34,18 +44,19 @@ export default function Newtaskcreate(){
         });
 
         if (!response.ok) throw new Error("Failed to add task");
-        return response.json();
+
+        return response.json() as Promise<Task>;
       },
 
-      onMutate: async (newTask) => {
+      onMutate: async (newTask: Task) => {
         await queryClient.cancelQueries({ queryKey: ["user"] });
 
-        const previousData = queryClient.getQueryData(["user"]);
+        const previousData = queryClient.getQueryData<{ user: { tasks: Task[] } }>(["user"]);
 
-        queryClient.setQueryData(["user"], (old: any) => ({
+        queryClient.setQueryData<{ user: { tasks: Task[] } }>(["user"], (old) => ({
           ...old,
           user: {
-            ...old.user,
+            ...old!.user,
             tasks: [...(old?.user?.tasks || []), { ...newTask, id: Date.now() }],
           },
         }));
@@ -53,8 +64,10 @@ export default function Newtaskcreate(){
         return { previousData };
       },
 
-      onError: (_err, _newTask, context: any) => {
-        queryClient.setQueryData(["user"], context.previousData);
+      onError: (_err: unknown, _newTask: Task, context: { previousData?: { user: { tasks: Task[] } } } | undefined) => {
+        if (context?.previousData) {
+          queryClient.setQueryData(["user"], context.previousData);
+        }
       },
 
       onSettled: () => {
@@ -63,12 +76,11 @@ export default function Newtaskcreate(){
     });
 
 
-
     const handleNewTask = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         setLoading(true);
 
-        const newTask = {
+        const newTask : Task = {
             name,
             details,
             type: active,
