@@ -91,10 +91,10 @@ export default function Schedule(){
       if(response.ok){
         const data = await response.json();
         
-        setUser(user => ({
-          ...(user ?? {}),
-          tasks: user.tasks.filter(task => task.id !== id),
-        }));
+        // setUser(user => ({
+        //   ...(user ?? {}),
+        //   tasks: user.tasks.filter(task => task.id !== id),
+        // }));
         if(data.task.type === "personal"){
           setActivetasksPersonal(activetasksPersonal - 1)
         } 
@@ -117,10 +117,10 @@ export default function Schedule(){
       if(response.ok){
         const data = await response.json();
         
-        setUser(user => ({
-          ...(user ?? {}),
-          tasks: user.tasks.filter(task => task.id !== id),
-        }));
+        // setUser(user => ({
+        //   ...(user ?? {}),
+        //   tasks: user.tasks.filter(task => task.id !== id),
+        // }));
 
       }
 

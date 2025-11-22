@@ -15,6 +15,11 @@ import { useUser } from '../../../hooks/useUser';
 
 import { useState, useEffect } from "react";
 
+interface User {
+  id: string;
+  name: string;
+}
+
 export default function Home() {
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
@@ -57,10 +62,10 @@ export default function Home() {
       if(response.ok){
         const data = await response.json();
         
-        setUser(user => ({
-          ...(user ?? {}),
-          tasks: user.tasks.filter(task => task.id !== id),
-        }));
+        // setUser(user => ({
+        //   ...(user ?? {}),
+        //   tasks: user.tasks.filter(task => task.id !== id),
+        // }));
         if(data.task.type === "personal"){
           setActivetasksPersonal(activetasksPersonal - 1)
         } 
@@ -83,10 +88,10 @@ export default function Home() {
       if(response.ok){
         const data = await response.json();
         
-        setUser(user => ({
-          ...(user ?? {}),
-          tasks: user.tasks.filter(task => task.id !== id),
-        }));
+        // setUser(user => ({
+        //   ...(user ?? {}),
+        //   tasks: user.tasks.filter(task => task.id !== id),
+        // }));
 
         if(data.task.type === "personal"){
           setActivetasksPersonal(activetasksPersonal - 1)
