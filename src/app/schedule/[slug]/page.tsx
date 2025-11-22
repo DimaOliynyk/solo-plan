@@ -5,45 +5,56 @@ import Link from "next/link";
 
 import { useState, useEffect } from "react";
 
+import { useUser } from '../../../hooks/useUser';
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
 
 export default function Schedule(){
-      const [user, setUser] = useState(Object); 
     const [active, setActive] = useState(new Date().getDate());
     const [weekDates, setWeekDates] = useState<Date[]>([]);
     const [activetasks, setActivetasks] = useState(Number);
     const [activetasksPersonal, setActivetasksPersonal] = useState(0)
     const [activetasksWork, setActivetasksWork] = useState(0)
 
-      async function getUser(){
-      const response = await fetch('http://localhost:3001/api/auth/me', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("token")}`
-        },
-      })
 
-      if(response.ok){
-        const data = await response.json();
+  const queryClient = useQueryClient()
+
+  // async function getUser(){
+  //     const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
+  //       method: 'GET',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //         'Authorization': `Bearer ${localStorage.getItem("token")}`
+  //       },
+  //     })
+
+  //     if(response.ok){
+  //       const data = await response.json();
           
-        let actP = 0
-        let actW = 0
-        data.user.tasks.map((e) => {
-          console.log(222)
-          if(e.type === "personal"){
-            actP = actP + 1
-          } 
+  //       let actP = 0
+  //       let actW = 0
+  //       data.user.tasks.map((e) => {
+  //         console.log(222)
+  //         if(e.type === "personal"){
+  //           actP = actP + 1
+  //         } 
 
-          else if(e.type === "work"){
-            actW = actW + 1
-          } 
-        })
-        setActivetasksWork(actW)
-        setActivetasksPersonal(actP)
-        setUser(data.user)
-        console.log(data)
-      }
-  }
+  //         else if(e.type === "work"){
+  //           actW = actW + 1
+  //         } 
+  //       })
+  //       setActivetasksWork(actW)
+  //       setActivetasksPersonal(actP)
+  //       setUser(data.user)
+  //       console.log(data)
+  //     }
+  // }
 
 
     function getThisWeekDates(): Date[] {
@@ -69,7 +80,7 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-      const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -95,7 +106,7 @@ export default function Schedule(){
   }
 
     async function makeTaskUnComplete(id: string){
-      const response = await fetch(`http://localhost:3001/api/tasks/${id}/complete`, {
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}/complete`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -124,10 +135,19 @@ export default function Schedule(){
 
     useEffect(() => {
         setWeekDates(getThisWeekDates());
-         getUser() 
     }, []);
 
-    if(Object.keys(user).length !== 0){
+  const { data, isLoading, isError, error } = useUser();
+
+  if (isLoading) return <div>Loading user...</div>;
+
+  if (isError) {
+    localStorage.removeItem("token"); // runs immediately
+    return <div>Error: {error?.message}</div>;
+  }
+
+  const user = data?.user;
+
 
         return(
             <div className="flex flex-col min-h-screen">
@@ -213,4 +233,3 @@ export default function Schedule(){
             </div>
         )
     }
-}

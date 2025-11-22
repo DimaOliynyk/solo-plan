@@ -1,8 +1,9 @@
-"use client"; // RootLayout must be client if it uses AuthCheck
-
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import AuthCheck from "../components/AuthCheck";
+import AuthProvider from "./AuthProvider";
+
+
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,6 +14,7 @@ const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
 });
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -32,9 +34,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 w-[390px] m-auto`}
       >
-        {/* <AuthCheck> */}
+        <AuthProvider>
           {children}
-        {/* </AuthCheck> */}
+        </AuthProvider>
       </body>
     </html>
   );

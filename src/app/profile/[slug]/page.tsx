@@ -5,6 +5,18 @@ import Link from 'next/link';
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 
+
+import { useUser } from '../../../hooks/useUser';
+
+
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+
 function Modal({ isOpen, onClose, content }) {
   if (!isOpen) return null;
 
@@ -28,8 +40,8 @@ export default function Profile(){
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [modalContent, setModalContent] = useState(String);
     const [modalType, setModalType] = useState(String);
-    const [user, setUser] = useState(Object); 
 
+    const queryClient = useQueryClient()
     const router = useRouter();
     
     const handleLogout = () => {
@@ -45,26 +57,15 @@ export default function Profile(){
         console.log(222)
     };
 
+    const { data, isLoading, isError, error } = useUser();
 
-      async function getUser(){
-      const response = await fetch('http://localhost:3001/api/auth/me', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("token")}`
-        },
-      })
-
-      if(response.ok){
-        const data = await response.json();
-        setUser(data.user)
-      }
+    if (isLoading) return <div>Loading user...</div>;
+    if (isError) {
+        localStorage.removeItem("token"); // runs immediately
+        return <div>Error: {error?.message}</div>;
     }
 
-
-    useEffect(() => {
-        getUser()
-    }, []);
+    const user = data?.user;
 
     if(Object.keys(user).length !== 0){
         return(

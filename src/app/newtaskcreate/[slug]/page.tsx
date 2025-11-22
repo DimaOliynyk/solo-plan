@@ -1,10 +1,13 @@
-"use client"; 
+"use client";
 
 import Link from 'next/link';
 
 import { useState } from "react";
 import { FormEvent } from 'react'
 import { useRouter } from 'next/navigation'
+
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 export default function Newtaskcreate(){
     const [active, setActive] = useState("");
@@ -17,50 +20,75 @@ export default function Newtaskcreate(){
     const [loading, setLoading] = useState(false);
 
     const router = useRouter()
+    const queryClient = useQueryClient();
     
-    async function handleNewTask(event: FormEvent<HTMLFormElement>) {
-        event.preventDefault()
-        console.log(222)
-        const formData = new FormData(event.currentTarget)
-        const name = (formData.get('name') ?? '') as string;
-        const details = (formData.get('details') ?? '') as string;
-        const type = active;
-        const projectname = (formData.get('projectname') ?? '') as string;
+    const addTaskMutation = useMutation({
+      mutationFn: async (newTask: any) => {
+        const response = await fetch("https://solo-plan-server.onrender.com/api/tasks/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify(newTask),
+        });
 
-        const dateValue = formData.get("date") as string | null;
-        const date = dateValue ? Number(dateValue.replaceAll("-", "").slice(6, 8)) : 0; 
+        if (!response.ok) throw new Error("Failed to add task");
+        return response.json();
+      },
 
-        const timeValue = formData.get("time") as string | null;
-        const time = timeValue ? timeValue.replace(":", "") : "";
-        
-        const durationValue = formData.get("duration") as string | null;
-        const duration = durationValue ? Number(durationValue) : 0;
+      onMutate: async (newTask) => {
+        await queryClient.cancelQueries({ queryKey: ["user"] });
 
-        console.log(time)
+        const previousData = queryClient.getQueryData(["user"]);
+
+        queryClient.setQueryData(["user"], (old: any) => ({
+          ...old,
+          user: {
+            ...old.user,
+            tasks: [...(old?.user?.tasks || []), { ...newTask, id: Date.now() }],
+          },
+        }));
+
+        return { previousData };
+      },
+
+      onError: (_err, _newTask, context: any) => {
+        queryClient.setQueryData(["user"], context.previousData);
+      },
+
+      onSettled: () => {
+        queryClient.invalidateQueries({ queryKey: ["user"] });
+      },
+    });
+
+
+
+    const handleNewTask = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setLoading(true);
+
+        const newTask = {
+            name,
+            details,
+            type: active,
+            projectname,
+            date,
+            time,
+            duration,
+        };
+
         try {
-            const response = await fetch('http://localhost:3001/api/tasks/', {
-              method: 'POST',
-              headers: { 
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${localStorage.getItem("token")}`
-                },
-              body: JSON.stringify({ name, details, type, projectname, date, time, duration }),
-            })
-        
-            if (response.ok) {
-              const data = await response.json();
-    
-              router.push(`/home/${data.author.username}`)
-            } else if(response.status === 402){
-              alert("You can't add task to previous date!")
-            } else {
-                alert("Something went wrong while adding the task.");
-            }   
+            await addTaskMutation.mutateAsync(newTask);
+            router.push("/home/user"); // go back immediately
         } catch (error) {
-            console.error("Error submitting task:", error);
-            alert("Network error. Please try again later.");
+            console.error(error);
+            alert("Error adding task!");
+        } finally {
+            setLoading(false);
         }
-    } 
+    };
+
 
     
     

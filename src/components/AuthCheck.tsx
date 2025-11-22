@@ -11,19 +11,29 @@ export default function AuthCheck({ children }: AuthCheckProps) {
   const router = useRouter();
 
   useEffect(() => {
+    const publicPaths = ["/login", "/signup"]; // allow these routes
+    const path = window.location.pathname;
+
     const params = new URLSearchParams(window.location.search);
     const tokenGoogle = params.get("token");
-
     const token = localStorage.getItem("token");
 
-    if (!token || !tokenGoogle) {
-        router.replace("/login"); // no token → redirect to login
+    if (!token && !tokenGoogle) {
+      // not logged in → redirect to login if not public path
+      if (!publicPaths.includes(path)) {
+        router.replace("/login");
+      }
     } else {
-        if(token) localStorage.setItem("token", token); // save token for AuthCheck
-        if(tokenGoogle) localStorage.setItem("token", tokenGoogle); // save token for AuthCheck
-        router.replace("/dashboard"); // redirect to protected page
+      // logged in → save tokens
+      if (token) localStorage.setItem("token", token);
+      if (tokenGoogle) localStorage.setItem("token", tokenGoogle);
+
+      // if on public page, redirect to dashboard
+      if (publicPaths.includes(path)) {
+        router.replace("/dashboard");
+      }
     }
   }, [router]);
 
-  return <>{children}</>; // render children only if token exists
+  return <>{children}</>;
 }

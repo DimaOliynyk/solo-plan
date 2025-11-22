@@ -1,7 +1,11 @@
 "use client";
 
+import { useMutation } from "@tanstack/react-query";
+
 import { FormEvent, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+
+import { loginUser } from "@/hooks/useUser";
 
 export default function Login() {
   const router = useRouter();
@@ -17,33 +21,29 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "http://localhost:3001/api/auth/google";
+    window.location.href = "https://solo-plan-server.onrender.com/api/auth/google";
   };
+
+  const mutation = useMutation({
+    mutationFn: loginUser,
+    onSuccess: (data, variables) => {
+      // Save token and navigate
+      localStorage.setItem("token", data.token);
+      router.push(`/home/${variables.username}`);
+    },
+    onError: () => {
+      alert("Login failed");
+    },
+  });
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const formData = new FormData(event.currentTarget);
-    const username = formData.get("username");
-    const password = formData.get("password");
+    const username = formData.get("username") as string;
+    const password = formData.get("password") as string;
 
-    const response = await fetch(
-      "http://localhost:3001/api/auth/login",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
-      }
-    );
-
-    if (response.ok) {
-      const data = await response.json();
-      localStorage.setItem("token", data.token);
-      router.push(`/home/${username}`);
-    } else {
-      // Handle errors
-      alert("Login failed");
-    }
+    mutation.mutate({ username, password });
   }
 
   if (loading) {

@@ -3,58 +3,31 @@
 import Image from "next/image";
 import Link from 'next/link'
 
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  QueryClient,
+  QueryClientProvider,
+} from '@tanstack/react-query'
+
+import { useUser } from '../../../hooks/useUser';
+
 import { useState, useEffect } from "react";
 
 export default function Home() {
-  const [user, setUser] = useState(Object); 
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
   const [activetasksPersonal, setActivetasksPersonal] = useState(0)
   const [activetasksWork, setActivetasksWork] = useState(0)
   const [activetaskstoday, setActivetaskstoday] = useState(Number);
-  async function getUser(){
-      const response = await fetch('http://localhost:3001/api/auth/me', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("token")}`
-        },
-      })
 
-      if(response.ok){
-        const data = await response.json();
-          
-        let actP = 0
-        let actW = 0
-        data.user.tasks.map((e) => {
-          console.log(222)
-          if(e.type === "personal"){
-            actP = actP + 1
-          } 
-
-          else if(e.type === "work"){
-            actW = actW + 1
-          } 
-        })
-        setActivetasksWork(actW)
-        setActivetasksPersonal(actP)
-        setUser(data.user)
-        console.log(data)
-      }
-  }
-
-  useEffect(() => {
-    getUser()
-  }, []);
-
-
+  const queryClient = useQueryClient()
   const [weekDates, setWeekDates] = useState<Date[]>([]);
 
   function getThisWeekDates(): Date[] {
     const today = new Date();
     setActivetasks(today.getDate())
-    console.log(today.getDate())
-    console.log(activetasks)
     const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
     
     // Shift to Monday (change +6 % 7 if your week starts on Monday)
@@ -73,7 +46,7 @@ export default function Home() {
   }
 
   async function deleteTask(id: string){
-      const response = await fetch(`http://localhost:3001/api/tasks/${id}`, {
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -99,7 +72,7 @@ export default function Home() {
   }
 
   async function makeTaskComplete(id: string){
-      const response = await fetch(`http://localhost:3001/api/tasks/${id}/complete`, {
+      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}/complete`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -139,8 +112,17 @@ export default function Home() {
     return `${hours}:${minutes}`;
   }
 
-  if(Object.keys(user).length !== 0){
-    return (
+
+  const { data, isLoading, isError, error } = useUser();
+
+  if (isLoading) return <div>Loading user...</div>;
+
+  if (isError) {
+    return localStorage.removeItem("token"); // runs immediately
+  }
+
+  const user = data?.user;
+  return (
       <div className=" flex flex-col">
         <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
           <div className="">
@@ -206,9 +188,8 @@ export default function Home() {
 
               <div className="m-auto flex flex-col mt-[25px]">
                 {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                  const date = String(e.date)[0] + String(e.date)[1]
                   if(!e.isCompleted){
-                    if(Number(date) === active){
+                    if(Number(e.date) === active){
                       return(
                         <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
                           <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
@@ -264,5 +245,5 @@ export default function Home() {
         </footer>
       </div>
     );
-  }
+  
 }
