@@ -80,7 +80,7 @@ export default function Schedule(){
     }
 
     async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+      const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ export default function Schedule(){
   }
 
     async function makeTaskUnComplete(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}/complete`, {
+      const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}/complete`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -137,6 +137,35 @@ export default function Schedule(){
         setWeekDates(getThisWeekDates());
     }, []);
 
+  function getWeekdayFromDateNumber(dayNumber: number, month = new Date().getMonth(), year = new Date().getFullYear()): string {
+    const date = new Date(year, month, dayNumber);
+    return date.toLocaleDateString('en-US', { weekday: 'long' }); // e.g., "Monday"
+  }
+
+  const completeTaskMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(
+        `http://192.168.0.90:3001/api/tasks/${id}/complete`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          },
+        }
+      );
+
+      if (!response.ok) throw new Error('Failed to complete task');
+
+      const data = await response.json();
+      return data; // ✅ return parsed JSON once
+    },
+    onSuccess: () => {
+      // ✅ Invalidate the user query to refetch tasks
+      queryClient.invalidateQueries({ queryKey: ['user'] });
+    },
+  });
+
   const { data, isLoading, isError, error } = useUser();
 
   if (isLoading) return <div>Loading user...</div>;
@@ -148,7 +177,7 @@ export default function Schedule(){
 
   const user = data?.user;
 
-
+  console.log(user.tasks)
         return(
             <div className="flex flex-col min-h-screen">
                 <main className="flex-grow ml-[20px] mt-[28px] mr-[20px]">
@@ -173,15 +202,19 @@ export default function Schedule(){
                     </div>
     
                     <div className="mt-[40px]">
-                        <h3 className="font-medium text-[22px]">Today</h3>
-                        <p className="font-light text-[16px]">Monday, April 20</p>
+                        <h3 className="font-medium text-[22px]">Day</h3>
+                        <p className="font-light text-[16px]">{getWeekdayFromDateNumber(active)}, December {active}</p>
     
     
                        <div className="m-auto flex flex-col mt-[25px]">
                             {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                            const date = String(e.date)[0] + String(e.date)[1]
+                            const date = new Date(e.date);
+                            const day = date.getDate(); // 26
+
+                            console.log(day)
+                            console.log(`active ${active}`)
                             if(e.isCompleted === true){
-                              if(Number(date) === active){
+                              if(Number(day) === active){
                                   return(
                                   <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
                                       <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
@@ -191,7 +224,7 @@ export default function Schedule(){
       
                                       <div className="flex flex-row justify-between">
                                           <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                                          <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
+                                          <img src="/icons8-delete.svg" className="w-[30px] h-[30px] ml-[80px] mt-[5px] mr-[20px]" onClick={() => deleteTask(e.id)}/>
                                       </div>
                                       <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
                   
@@ -204,7 +237,7 @@ export default function Schedule(){
                                           <p>Duration</p>
                                           <p className="text-gray-500">{e.duration} Minutes</p>
                                           </div>
-                                          <img src="/cross.png" className="w-[30px] h-[30px] ml-[90px] mt-[20px]" onClick={() => makeTaskUnComplete(e.id)}/>
+                                          <img src="/icons8-cross.svg" className="w-[30px] h-[30px] ml-[97px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
                                       </div>
                                       </div>
                                   </div>

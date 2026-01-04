@@ -34,7 +34,7 @@ export default function Newtaskcreate(){
     
     const addTaskMutation = useMutation({
       mutationFn: async (newTask: Task) => {
-        const response = await fetch("https://solo-plan-server.onrender.com/api/tasks/", {
+        const response = await fetch("http://192.168.0.90:3001/api/tasks/", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -101,14 +101,19 @@ export default function Newtaskcreate(){
         }
     };
 
-
+    console.log(date)
     
     
     return(
         <>  
-            <div className="mt-[30px] flex flex-row justify-between w-[100%]">
-                <Link href="/home/user">back</Link>
-                <h3 className="m-auto text-center font-medium text-[22px]">Add task</h3>
+            <div className="mt-[30px] flex flex-row w-[100%] pl-[20px] pr-[70px]">
+                <button onClick={() => router.back()} className="flex items-center gap-2 text-gray-700 hover:text-gray-900 mt-[5px]">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  <span className="text-sm font-medium">Back</span>
+                </button>
+                <h3 className="text-center m-auto font-medium text-[22px]">Add task</h3>
             </div>
 
             <form className="flex flex-col m-auto w-[340px]" onSubmit={handleNewTask}>

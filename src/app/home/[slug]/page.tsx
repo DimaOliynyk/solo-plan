@@ -15,11 +15,6 @@ import { useUser } from '../../../hooks/useUser';
 
 import { useState, useEffect } from "react";
 
-interface User {
-  id: string;
-  name: string;
-}
-
 export default function Home() {
   const [active, setActive] = useState(new Date().getDate());
   const [activetasks, setActivetasks] = useState(Number);
@@ -51,7 +46,7 @@ export default function Home() {
   }
 
   async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}`, {
+      const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -76,33 +71,6 @@ export default function Home() {
 
   }
 
-  async function makeTaskComplete(id: string){
-      const response = await fetch(`https://solo-plan-server.onrender.com/api/tasks/${id}/complete`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("token")}`
-        },
-      })
-
-      if(response.ok){
-        const data = await response.json();
-        
-        // setUser(user => ({
-        //   ...(user ?? {}),
-        //   tasks: user.tasks.filter(task => task.id !== id),
-        // }));
-
-        if(data.task.type === "personal"){
-          setActivetasksPersonal(activetasksPersonal - 1)
-        } 
-        else if(data.task.type === "work"){
-          setActivetasksWork(activetasksWork - 1)
-        } 
-      }
-
-  }
-  
 
   useEffect(() => {
     setWeekDates(getThisWeekDates());
@@ -118,6 +86,30 @@ export default function Home() {
   }
 
 
+const completeTaskMutation = useMutation({
+  mutationFn: async (id: string) => {
+    const response = await fetch(
+      `http://192.168.0.90:3001/api/tasks/${id}/complete`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        },
+      }
+    );
+
+    if (!response.ok) throw new Error('Failed to complete task');
+
+    const data = await response.json();
+    return data; // ✅ return parsed JSON once
+  },
+  onSuccess: () => {
+    // ✅ Invalidate the user query to refetch tasks
+    queryClient.invalidateQueries({ queryKey: ['user'] });
+  },
+});
+
   const { data, isLoading, isError, error } = useUser();
 
   if (isLoading) return <div>Loading user...</div>;
@@ -127,6 +119,11 @@ export default function Home() {
   }
 
   const user = data?.user;
+
+  const personalTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'personal').length;
+  const workTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'work').length;
+
+
   return (
       <div className=" flex flex-col">
         <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
@@ -168,7 +165,7 @@ export default function Home() {
               <div className="w-[175px] h-[110px] bg-white rounded-md ml-[0] flex flex-row justify-between">
                 <div className="ml-[15px] mt-[15px]">
                   <p className="text-[19px] w-[80px]">Personal To-do</p>
-                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{activetasksPersonal} Tasks remaining</p>
+                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{personalTasksCount} Tasks remaining</p>
   
                   {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
                 </div>
@@ -178,7 +175,7 @@ export default function Home() {
               <div className="w-[175px] h-[110px] bg-white rounded-md mr-[0] flex flex-row justify-between ml-[10px]" >
                 <div className="ml-[15px] mt-[15px]">
                   <p className="text-[19px] w-[70px]">Work To-do</p>
-                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{activetasksWork} Tasks remaining</p>
+                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{workTasksCount} Tasks remaining</p>
   
                   {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
                 </div>
@@ -193,34 +190,39 @@ export default function Home() {
 
               <div className="m-auto flex flex-col mt-[25px]">
                 {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                  if(!e.isCompleted){
-                    if(Number(e.date) === active){
+                  const date = new Date(e.date);
+                  const day = date.getDate(); // 26
+
+                  console.log(day)
+                  console.log(`active ${active}`)
+                  if(e.isCompleted === false){
+                    if(Number(day) === active){
                       return(
-                        <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
-                          <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
-  
-                          </div>
-                          <div className="pl-[20px] w-[100%]">
-  
-                            <div className="flex flex-row justify-between">
-                              <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                              <button onClick={() => deleteTask(e.id)} className="mr-[20px]">x</button>
-                            </div>
-                            <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
+                       <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
+                                      <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
       
-                            <div className="flex flex-row mt-[10px]">
-                              <div>
-                                <p>Start Time</p>
-                                <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
-                              </div>
-                              <div className="ml-[40px]">
-                                <p>Duration</p>
-                                <p className="text-gray-500">{e.duration} Minutes</p>
-                              </div>
-                              <img src="/check.png" className="w-[30px] h-[30px] ml-[90px] mt-[20px]" onClick={() => makeTaskComplete(e.id)}/>
-                            </div> 
-                          </div>
-                        </div>
+                                      </div>
+                                      <div className="pl-[20px] w-[100%]">
+      
+                                      <div className="flex flex-row justify-between">
+                                          <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
+                                          <img src="/icons8-delete.svg" className="w-[30px] h-[30px] ml-[80px] mt-[5px] mr-[20px]" onClick={() => deleteTask(e.id)}/>
+                                      </div>
+                                      <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
+                  
+                                      <div className="flex flex-row mt-[10px]">
+                                          <div>
+                                          <p>Start Time</p>
+                                          <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                                          </div>
+                                          <div className="ml-[40px]">
+                                          <p>Duration</p>
+                                          <p className="text-gray-500">{e.duration} Minutes</p>
+                                          </div>
+                                          <img src="/icons8-done.svg" className="w-[30px] h-[30px] ml-[97px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
+                                      </div>
+                                      </div>
+                                  </div>
                       )
                   }
                   }
@@ -229,7 +231,7 @@ export default function Home() {
               {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
             </div>
   
-            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[50px]">Add New Task</Link>
+            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[80px]">Add New Task</Link>
           </div>
         </main>
   

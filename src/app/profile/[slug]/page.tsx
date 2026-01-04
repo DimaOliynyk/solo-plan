@@ -67,16 +67,20 @@ export default function Profile(){
 
     const user = data?.user;
 
+    const tasksCount = user.tasks.length;
+
     if(Object.keys(user).length !== 0){
         return(
             <>
-                <header className="flex flex-row w-[390px] pt-[40px] pb-[40px]">
-                    <img src={user.avatarUrl} className="ml-[15px] mr-[10px] w-[50px] h-[50px] rounded-2xl"/>
-                    <div className="flex flex-col ml-[10px]">
-                        <p className='capitalize' onClick={() => {handleClick('username')}}>{user.username}</p>
-                        <p onClick={() => {handleClick('work')}}>Illustrator Freelancer</p>
+                <header className="flex flex-row w-[390px] pt-[40px] pb-[40px] justify-between">
+                    <div className='flex flex-row'>
+                        <img src={user.avatarUrl} className="ml-[15px] mr-[10px] w-[50px] h-[50px] rounded-2xl"/>
+                        <div className="flex flex-col ml-[5px]">
+                            <p className='capitalize ml-[0px] text-[18px]' onClick={() => {handleClick('username')}}>{user.username}</p>
+                            <p onClick={() => {handleClick('work')}}></p>
+                        </div>
                     </div>
-                    <div className="w-[80px] h-[40px] bg-gray-100 ml-[55px] rounded-3xl">
+                    <div className="w-[80px] h-[40px] bg-gray-100 ml-[55px] rounded-3xl mr-[15px]">
                         <p className="text-[#2879E4] ml-[25px] mt-[7px] m-auto">Edit</p>
                     </div>
                         <Modal
@@ -91,7 +95,7 @@ export default function Profile(){
                         <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
                         <div className="flex flex-col mt-[13px] ml-[10px] text-[#2879E4]">
                             <p className="pt-15px text-[17px] font-medium">Task Statistic Report</p>
-                            <p className="text-[14px] font-light">205 Tasks</p>
+                            <p className="text-[14px] font-light">{tasksCount} Tasks</p>
                         </div>
                         <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[92px] mt-[22px]"/>
                     </div> 

@@ -21,7 +21,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "https://solo-plan-server.onrender.com/api/auth/google";
+    window.location.href = "http://192.168.0.90:3001/api/auth/google";
   };
 
   const mutation = useMutation({
@@ -59,7 +59,7 @@ export default function Login() {
 
   // No token, show login form
   return (
-    <div className="mt-[20px] bg-gray-50 flex flex-col items-center justify-center">
+    <div className="mt-[40px] bg-gray-50 flex flex-col items-center justify-center">
       <header className="justify-items-center">
         <img
           src="./main-logo.png"

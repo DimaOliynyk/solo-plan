@@ -24,7 +24,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "https://solo-plan-server.onrender.com/api/auth/register",
+      "http://192.168.0.90:3001/api/auth/register",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

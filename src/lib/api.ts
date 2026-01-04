@@ -1,8 +1,12 @@
 export interface User {
-  id: string;
+  _id: string;
   username: string;
-  email: string;
-  // add other fields returned by your API
+  email?: string;
+  avatarUrl?: string;
+  googleId?: string;
+  tasks?: object[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export const getUser = async (): Promise<User> => {
