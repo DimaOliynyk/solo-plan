@@ -3,9 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, act } from "react";
 
 import { useUser } from '../../../hooks/useUser';
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Import Swiper styles
+import 'swiper/css';
+
 
 import {
   useQuery,
@@ -17,7 +22,6 @@ import {
 
 export default function Schedule(){
     const [active, setActive] = useState(new Date().getDate());
-    const [weekDates, setWeekDates] = useState<Date[]>([]);
     const [activetasks, setActivetasks] = useState(Number);
     const [activetasksPersonal, setActivetasksPersonal] = useState(0)
     const [activetasksWork, setActivetasksWork] = useState(0)
@@ -25,59 +29,31 @@ export default function Schedule(){
 
   const queryClient = useQueryClient()
 
-  // async function getUser(){
-  //     const response = await fetch('https://solo-plan-server.onrender.com/api/auth/me', {
-  //       method: 'GET',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //         'Authorization': `Bearer ${localStorage.getItem("token")}`
-  //       },
-  //     })
+  function getMonthDayDetails() {
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = today.getMonth();
 
-  //     if(response.ok){
-  //       const data = await response.json();
-          
-  //       let actP = 0
-  //       let actW = 0
-  //       data.user.tasks.map((e) => {
-  //         console.log(222)
-  //         if(e.type === "personal"){
-  //           actP = actP + 1
-  //         } 
+      // Get total days in current month
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  //         else if(e.type === "work"){
-  //           actW = actW + 1
-  //         } 
-  //       })
-  //       setActivetasksWork(actW)
-  //       setActivetasksPersonal(actP)
-  //       setUser(data.user)
-  //       console.log(data)
-  //     }
-  // }
+      // Formatter for the day name
+      const dayNameFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
 
+      const monthDetails: DayDetail[] = [];
 
-    function getThisWeekDates(): Date[] {
-        const today = new Date();
-        setActivetasks(today.getDate())
-        console.log(today.getDate())
-        console.log(activetasks)
-        const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
+      for (let i = 1; i <= daysInMonth; i++) {
+        const date = new Date(year, month, i);
         
-        // Shift to Monday (change +6 % 7 if your week starts on Monday)
-        const monday = new Date(today);
-        monday.setDate(today.getDate() - ((day + 6) % 7));
-    
-        // Generate array of 7 dates
-        const weekDates: Date[] = [];
-        for (let i = 0; i < 5; i++) {
-          const d = new Date(monday);
-          d.setDate(monday.getDate() + i);
-          weekDates.push(d);
-        }
-    
-        return weekDates;
-    }
+        monthDetails.push({
+          dayNumber: i,
+          dayName: dayNameFormatter.format(date),
+          fullDate: date
+        });
+      }
+
+      return monthDetails;
+  }
 
     async function deleteTask(id: string){
       const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}`, {
@@ -133,9 +109,6 @@ export default function Schedule(){
         return `${hours}:${minutes}`;
     }
 
-    useEffect(() => {
-        setWeekDates(getThisWeekDates());
-    }, []);
 
   function getWeekdayFromDateNumber(dayNumber: number, month = new Date().getMonth(), year = new Date().getFullYear()): string {
     const date = new Date(year, month, dayNumber);
@@ -175,77 +148,104 @@ export default function Schedule(){
     return <div>Error: {error?.message}</div>;
   }
 
-  const user = data?.user;
+  const hours = Array.from({ length: 24 }, (_, i) => i);
 
+  const weekDates = getMonthDayDetails()
+
+  const calculateTop = (timeString) => {
+    // Разделяем строку "10:00" на часы и минуты
+    const [hours, minutes] = timeString.split(':').map(Number);
+    
+    const hourHeight = 64; // Высота одного часа h-16
+    const minuteHeight = 64 / 60;
+    
+    // Считаем отступ от самого верха
+    return (hours * hourHeight) + (minutes * minuteHeight);
+  };
+  
+  const user = data?.user;
+  
+  console.log(active)
   console.log(user.tasks)
         return(
             <div className="flex flex-col min-h-screen">
-                <main className="flex-grow ml-[20px] mt-[28px] mr-[20px]">
-                    <div>
-                        <h3 className="font-medium text-[22px]">Activities</h3>
-    
-                    <div className="flex flex-row justify-between">
-                    {weekDates.map((date, idx) => (
-                        <button
-                                key={idx}
-                                onClick={() => setActive(date.getDate())}
-                                type="button"
-                                className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
-                                    ${active === date.getDate() ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
-                                >
-                                <p className="pt-[5px] font-light uppercase">{date.toLocaleDateString("en-US", { weekday: "short" })}</p>
-                                <p className="pt-[0] text-[24px]">{date.getDate()}</p>
-                        </button>
-    
-                    ))}
-                    </div>
-                    </div>
-    
-                    <div className="mt-[40px]">
-                        <h3 className="font-medium text-[22px]">Day</h3>
-                        <p className="font-light text-[16px]">{getWeekdayFromDateNumber(active)}, December {active}</p>
-    
-    
-                       <div className="m-auto flex flex-col mt-[25px]">
-                            {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                            const date = new Date(e.date);
-                            const day = date.getDate(); // 26
+                <main className="flex-grow ml-[20px] mt-[38px] mr-[20px]">
+                      <div className="flex flex-row justify-between">
+                        <Swiper
+                          spaceBetween={5}
+                          slidesPerView={5}
+                          onSlideChange={() => console.log('slide change')}
+                          onSwiper={(swiper) => console.log(swiper)}
+                        >
+                            {weekDates.map((date, idx) => (
+                              <SwiperSlide className="mr-[0px]">
+                              <button
+                                      key={idx}
+                                      onClick={() => setActive(date.dayNumber)}
+                                      type="button"
+                                      className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
+                                          ${active === date.dayNumber ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
+                                      >
+                                      <p className="pt-[5px] font-light uppercase">{date.dayName.slice(0,3)}</p>
+                                      <p className="pt-[0] text-[24px]">{date.dayNumber}</p>
+                              </button>
 
-                            console.log(day)
-                            console.log(`active ${active}`)
-                            if(e.isCompleted === true){
-                              if(Number(day) === active){
-                                  return(
-                                  <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
-                                      <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
-      
-                                      </div>
-                                      <div className="pl-[20px] w-[100%]">
-      
-                                      <div className="flex flex-row justify-between">
-                                          <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                                          <img src="/icons8-delete.svg" className="w-[30px] h-[30px] ml-[80px] mt-[5px] mr-[20px]" onClick={() => deleteTask(e.id)}/>
-                                      </div>
-                                      <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
-                  
-                                      <div className="flex flex-row mt-[10px]">
-                                          <div>
-                                          <p>Start Time</p>
-                                          <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
-                                          </div>
-                                          <div className="ml-[40px]">
-                                          <p>Duration</p>
-                                          <p className="text-gray-500">{e.duration} Minutes</p>
-                                          </div>
-                                          <img src="/icons8-cross.svg" className="w-[30px] h-[30px] ml-[97px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
-                                      </div>
-                                      </div>
-                                  </div>
-                                  )
-                              }
-                            }
-                            })}
+                            </SwiperSlide>
+                            ))}
+                        </Swiper>
+                      </div>
+
+                      <div className="flex flex-col rounded-xl mt-[20px]">
+                        {/* Заголовок с датой из твоего макета */}
+                      <div className="mb-6">
+                        <h2 className="text-[22px] font-medium">Day</h2>
+                        <p className="text-gray-500">Sunday, {active}</p>
+                      </div>
+
+                      <div className="relative">
+                        <div>
+                          {hours.map((hour) => (
+                            <div key={hour} className="flex h-16 group border-t border-gray-100">
+                              <div className="w-16 text-right pr-4 text-xs text-gray-400 pt-[-6px]">
+                                {`${hour.toString().padStart(2, '0')}:00`}
+                              </div>
+                              <div className="flex-1 relative group-hover:bg-gray-50/50 transition-colors" />
+                            </div>
+                          ))}
                         </div>
+
+                        <div className="absolute inset-0 ml-16 pointer-events-none">
+                          {/* Контейнер-обертка, чтобы задачи позиционировались относительно всего списка часов */}
+                          <div className="relative h-full">
+                            {user.tasks
+                              .filter(e => !e.isCompleted && Number(new Date(e.date).getDate()) === active)
+                              .map((e) => (
+                                <div 
+                                  key={e.id}
+                                  style={{ 
+                                    top: `${calculateTop(e.time)}px`, 
+                                    height: `${e.duration * (64/60)}px` 
+                                  }}
+                                  className="absolute left-2 right-4 bg-white border-l-4 border-blue-500 shadow-sm p-2 pointer-events-auto rounded-md flex flex-row justify-between"
+                                >
+                                  <p className="text-xs font-bold truncate">{e.name}</p>
+
+                                  <img src="/icons8-done.svg" className="w-[15px] h-[15px] ml-[97px] mt-[0]" onClick={() => completeTaskMutation.mutate(e.id)}/>
+                                </div>
+                              ))
+                            }
+                          </div>
+                        </div>
+
+                        {/* Индикатор текущего времени (для примера) */}
+                        {/* top должен рассчитываться динамически в зависимости от времени */}
+                        <div 
+                          className="absolute left-16 right-0 border-t-2 border-blue-500 z-10 flex items-center"
+                          style={{ top: '345px' }} // Пример статического позиционирования
+                        >
+                          <div className="w-2 h-2 bg-blue-500 rounded-full -ml-1" />
+                        </div>
+                      </div>
                     </div>
                 </main>
                 <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between fixed bottom-0 flex flex-row m-auto pt-[15px] pb-[10px]">

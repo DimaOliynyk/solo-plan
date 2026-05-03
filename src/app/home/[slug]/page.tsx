@@ -3,6 +3,11 @@
 import Image from "next/image";
 import Link from 'next/link'
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+
+// Import Swiper styles
+import 'swiper/css';
+
 import {
   useQuery,
   useMutation,
@@ -23,27 +28,33 @@ export default function Home() {
   const [activetaskstoday, setActivetaskstoday] = useState(Number);
 
   const queryClient = useQueryClient()
-  const [weekDates, setWeekDates] = useState<Date[]>([]);
 
-  function getThisWeekDates(): Date[] {
+  function getMonthDayDetails() {
     const today = new Date();
-    setActivetasks(today.getDate())
-    const day = today.getDay(); // 0 = Sunday, 1 = Monday, ...
-    
-    // Shift to Monday (change +6 % 7 if your week starts on Monday)
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - ((day + 6) % 7));
+    const year = today.getFullYear();
+    const month = today.getMonth();
 
-    // Generate array of 7 dates
-    const weekDates: Date[] = [];
-    for (let i = 0; i < 5; i++) {
-      const d = new Date(monday);
-      d.setDate(monday.getDate() + i);
-      weekDates.push(d);
+    // Get total days in current month
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+    // Formatter for the day name
+    const dayNameFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
+
+    const monthDetails: DayDetail[] = [];
+
+    for (let i = 1; i <= daysInMonth; i++) {
+      const date = new Date(year, month, i);
+      
+      monthDetails.push({
+        dayNumber: i,
+        dayName: dayNameFormatter.format(date),
+        fullDate: date
+      });
     }
 
-    return weekDates;
+    return monthDetails;
   }
+
 
   async function deleteTask(id: string){
       const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}`, {
@@ -72,10 +83,6 @@ export default function Home() {
   }
 
 
-  useEffect(() => {
-    setWeekDates(getThisWeekDates());
-  }, []);
-
 
 
   function formatTimeNumber(time: number): string {
@@ -102,10 +109,9 @@ const completeTaskMutation = useMutation({
     if (!response.ok) throw new Error('Failed to complete task');
 
     const data = await response.json();
-    return data; // ✅ return parsed JSON once
+    return data; 
   },
   onSuccess: () => {
-    // ✅ Invalidate the user query to refetch tasks
     queryClient.invalidateQueries({ queryKey: ['user'] });
   },
 });
@@ -115,7 +121,7 @@ const completeTaskMutation = useMutation({
   if (isLoading) return <div>Loading user...</div>;
 
   if (isError) {
-    return localStorage.removeItem("token"); // runs immediately
+    return localStorage.removeItem("token"); 
   }
 
   const user = data?.user;
@@ -123,16 +129,17 @@ const completeTaskMutation = useMutation({
   const personalTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'personal').length;
   const workTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'work').length;
 
-
+  const weekDates = getMonthDayDetails()
   return (
       <div className=" flex flex-col">
         <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
           <div className="">
             <h2 className="font-medium text-[22px] font-medium">Morning, {user.username} 👋</h2>
-            <p className="font-light text-[15px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
+            <p className="font-light text-[15px] mt-[5px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
           </div>
           <Link href="/profile/user">
-            <img src={user.avatarUrl} width={50} height={50} className="w-[50px] h-[50px] mr-[20px] mt-[5px] rounded-2xl"alt="user-profile-picture"/>
+            <img src={'https://scontent-ham3-1.cdninstagram.com/v/t51.82787-19/681313361_18355499287238847_5328308778329421688_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=4sYmR3KhSt4Q7kNvwF4RAYr&_nc_oc=AdrJITA83MEbGGqsu-24wepoahl6mSFhQyu0RlNm41yHaJj__uR8iOa9xWHHwYDJ6LmFeqo0hzmafU67VI1DMBu8&_nc_zt=24&_nc_ht=scontent-ham3-1.cdninstagram.com&_nc_gid=wmTxLkCCSgpjhNt13uDE_g&_nc_ss=7b689&oh=00_Af0j5Hb3aLjweZNFRWpMiuFJ5gPR7Rk7L02eRVkuRN2c0Q&oe=69F98563'} 
+            className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
           </Link>
         </header>
   
@@ -142,19 +149,28 @@ const completeTaskMutation = useMutation({
   
   
             <div className="flex flex-row justify-between">
-              {weekDates.map((date, idx) => (
-                <button
-                        key={idx}
-                        onClick={() => setActive(date.getDate())}
-                        type="button"
-                        className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
-                            ${active === date.getDate() ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
-                        >
-                        <p className="pt-[5px] font-light uppercase">{date.toLocaleDateString("en-US", { weekday: "short" })}</p>
-                        <p className="pt-[0] text-[24px]">{date.getDate()}</p>
-                </button>
+              <Swiper
+                spaceBetween={5}
+                slidesPerView={5}
+                onSlideChange={() => console.log('slide change')}
+                onSwiper={(swiper) => console.log(swiper)}
+              >
+                  {weekDates.map((date, idx) => (
+                    <SwiperSlide className="mr-[0px]">
+                    <button
+                            key={idx}
+                            onClick={() => setActive(date.dayNumber)}
+                            type="button"
+                            className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
+                                ${active === date.dayNumber ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
+                            >
+                            <p className="pt-[5px] font-light uppercase">{date.dayName.slice(0,3)}</p>
+                            <p className="pt-[0] text-[24px]">{date.dayNumber}</p>
+                    </button>
 
-              ))}
+                  </SwiperSlide>
+                  ))}
+              </Swiper>
             </div>
           </div>
   
@@ -190,8 +206,8 @@ const completeTaskMutation = useMutation({
 
               <div className="m-auto flex flex-col mt-[25px]">
                 {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                  const date = new Date(e.date);
-                  const day = date.getDate(); // 26
+                    const date = new Date(e.date);
+                    const day = date.getDate(); // 26
 
                   console.log(day)
                   console.log(`active ${active}`)
@@ -213,13 +229,13 @@ const completeTaskMutation = useMutation({
                                       <div className="flex flex-row mt-[10px]">
                                           <div>
                                           <p>Start Time</p>
-                                          <p className="text-gray-500">{formatTimeNumber(e.time)}</p>
+                                          <p className="text-gray-500">{e.time}</p>
                                           </div>
                                           <div className="ml-[40px]">
                                           <p>Duration</p>
                                           <p className="text-gray-500">{e.duration} Minutes</p>
                                           </div>
-                                          <img src="/icons8-done.svg" className="w-[30px] h-[30px] ml-[97px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
+                                          <img src="/icons8-done.svg" className="w-[30px] h-[30px] ml-[87px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
                                       </div>
                                       </div>
                                   </div>

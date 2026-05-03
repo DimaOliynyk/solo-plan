@@ -101,7 +101,6 @@ export default function Newtaskcreate(){
         }
     };
 
-    console.log(date)
     
     
     return(

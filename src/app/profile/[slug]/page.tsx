@@ -72,16 +72,15 @@ export default function Profile(){
     if(Object.keys(user).length !== 0){
         return(
             <>
-                <header className="flex flex-row w-[390px] pt-[40px] pb-[40px] justify-between">
+                <header className="flex flex-row w-[370px] pt-[40px] pb-[40px] ml-[20px] justify-between">
                     <div className='flex flex-row'>
-                        <img src={user.avatarUrl} className="ml-[15px] mr-[10px] w-[50px] h-[50px] rounded-2xl"/>
+                        <img src={'https://scontent-ham3-1.cdninstagram.com/v/t51.82787-19/681313361_18355499287238847_5328308778329421688_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=4sYmR3KhSt4Q7kNvwF4RAYr&_nc_oc=AdrJITA83MEbGGqsu-24wepoahl6mSFhQyu0RlNm41yHaJj__uR8iOa9xWHHwYDJ6LmFeqo0hzmafU67VI1DMBu8&_nc_zt=24&_nc_ht=scontent-ham3-1.cdninstagram.com&_nc_gid=wmTxLkCCSgpjhNt13uDE_g&_nc_ss=7b689&oh=00_Af0j5Hb3aLjweZNFRWpMiuFJ5gPR7Rk7L02eRVkuRN2c0Q&oe=69F98563'} 
+                        className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
                         <div className="flex flex-col ml-[5px]">
-                            <p className='capitalize ml-[0px] text-[18px]' onClick={() => {handleClick('username')}}>{user.username}</p>
+                            <h2 className="font-medium text-[17px] font-medium mt-[5px]">Morning, {user.username} 👋</h2>
+                            <p className='font-light text-[15px] mt-[5px]'><span className='text-[#2879E4]'>Edit</span> your information</p>
                             <p onClick={() => {handleClick('work')}}></p>
                         </div>
-                    </div>
-                    <div className="w-[80px] h-[40px] bg-gray-100 ml-[55px] rounded-3xl mr-[15px]">
-                        <p className="text-[#2879E4] ml-[25px] mt-[7px] m-auto">Edit</p>
                     </div>
                         <Modal
                             isOpen={isModalOpen}
@@ -91,14 +90,16 @@ export default function Profile(){
                 </header>
     
                 <main className="mb-[30px]">
-                    <div className="w-[360px] h-[70px] bg-gray-100 rounded-xl m-auto flex flex-row">
-                        <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
-                        <div className="flex flex-col mt-[13px] ml-[10px] text-[#2879E4]">
-                            <p className="pt-15px text-[17px] font-medium">Task Statistic Report</p>
-                            <p className="text-[14px] font-light">{tasksCount} Tasks</p>
-                        </div>
-                        <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[92px] mt-[22px]"/>
-                    </div> 
+                    <Link href="/statistics">
+                        <div className="w-[360px] h-[70px] bg-gray-100 rounded-xl m-auto flex flex-row">
+                            <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
+                            <div className="flex flex-col mt-[13px] ml-[10px] text-[#2879E4]">
+                                <p className="pt-15px text-[17px] font-medium">Task Statistic Report</p>
+                                <p className="text-[14px] font-light">{tasksCount} Tasks</p>
+                            </div>
+                            <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[92px] mt-[22px]"/>
+                        </div> 
+                    </Link>
     
                     <p className="mt-[25px] ml-[15px] font-light">General</p>
     
