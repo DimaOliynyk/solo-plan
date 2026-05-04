@@ -164,9 +164,7 @@ export default function Schedule(){
   };
   
   const user = data?.user;
-  
-  console.log(active)
-  console.log(user.tasks)
+
         return(
             <div className="flex flex-col min-h-screen">
                 <main className="flex-grow ml-[20px] mt-[38px] mr-[20px]">
@@ -175,7 +173,7 @@ export default function Schedule(){
                           spaceBetween={5}
                           slidesPerView={5}
                           onSlideChange={() => console.log('slide change')}
-                          onSwiper={(swiper) => console.log(swiper)}
+                          onSwiper={(swiper) => console.log()}
                         >
                             {weekDates.map((date, idx) => (
                               <SwiperSlide className="mr-[0px]">
@@ -226,11 +224,14 @@ export default function Schedule(){
                                     top: `${calculateTop(e.time)}px`, 
                                     height: `${e.duration * (64/60)}px` 
                                   }}
-                                  className="absolute left-2 right-4 bg-white border-l-4 border-blue-500 shadow-sm p-2 pointer-events-auto rounded-md flex flex-row justify-between"
+                                  className="absolute left-2 right-4 bg-white border-l-4 border-blue-500 shadow-sm p-2 pointer-events-auto rounded-md flex flex-col"
                                 >
-                                  <p className="text-xs font-bold truncate">{e.name}</p>
+                                  <div className="flex flex-row w-[240px] justify-between left-2 right-4">
+                                    <p className="text-xs font-bold truncate">{e.name}</p>
 
-                                  <img src="/icons8-done.svg" className="w-[15px] h-[15px] ml-[97px] mt-[0]" onClick={() => completeTaskMutation.mutate(e.id)}/>
+                                    <img src="/icons8-done.svg" className="w-[15px] h-[15px] mt-[0]" onClick={() => completeTaskMutation.mutate(e.id)}/>
+                                  </div>
+                                  <p className={`mt-2 ${e.duration >= 80 ? "flex" : "hidden"} text-xs font-leight truncate`}>{e.details}</p>
                                 </div>
                               ))
                             }
@@ -241,7 +242,11 @@ export default function Schedule(){
                         {/* top должен рассчитываться динамически в зависимости от времени */}
                         <div 
                           className="absolute left-16 right-0 border-t-2 border-blue-500 z-10 flex items-center"
-                          style={{ top: '345px' }} // Пример статического позиционирования
+                          style={{ top: `${calculateTop(new Date().toLocaleTimeString('en-GB', { 
+                            hour: '2-digit', 
+                            minute: '2-digit', 
+                            hour12: false 
+                          }))}px` }} // Пример статического позиционирования
                         >
                           <div className="w-2 h-2 bg-blue-500 rounded-full -ml-1" />
                         </div>

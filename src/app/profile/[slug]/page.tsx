@@ -8,6 +8,16 @@ import { useState, useEffect } from "react";
 
 import { useUser } from '../../../hooks/useUser';
 
+import { 
+  Bell, 
+  Palette, 
+  User, 
+  ShieldCheck, 
+  Database, 
+  LogOut, 
+  ChevronRight,
+  BarChart3
+} from 'lucide-react';
 
 import {
   useQuery,
@@ -49,13 +59,13 @@ export default function Profile(){
         router.push("/login");             
     };
 
-    const handleClick = (type) => {
-        console.log(type)
-        setModalContent("You clicked the text! This content can change.");
-        setIsModalOpen(true);
-        setModalType(type)
-        console.log(222)
-    };
+    // const handleClick = (type) => {
+    //     console.log(type)
+    //     setModalContent("You clicked the text! This content can change.");
+    //     setIsModalOpen(true);
+    //     setModalType(type)
+    //     console.log(222)
+    // };
 
     const { data, isLoading, isError, error } = useUser();
 
@@ -69,12 +79,33 @@ export default function Profile(){
 
     const tasksCount = user.tasks.length;
 
+    const settingsOptions = [
+        {
+            id: 'notifications',
+            title: 'Notifications',
+            icon: <Bell size={20} className="text-blue-500" />,
+            link: '#',
+        },
+        {
+            id: 'appearance',
+            title: 'Appearance',
+            icon: <Palette size={20} className="text-purple-500" />,
+            link: '#',
+        },
+        {
+            id: 'storage',
+            title: 'Storage & Data',
+            icon: <Database size={20} className="text-amber-500" />,
+            link: '#',
+        }
+    ];
+
     if(Object.keys(user).length !== 0){
         return(
             <>
                 <header className="flex flex-row w-[370px] pt-[40px] pb-[40px] ml-[20px] justify-between">
                     <div className='flex flex-row'>
-                        <img src={'https://scontent-ham3-1.cdninstagram.com/v/t51.82787-19/681313361_18355499287238847_5328308778329421688_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=4sYmR3KhSt4Q7kNvwF4RAYr&_nc_oc=AdrJITA83MEbGGqsu-24wepoahl6mSFhQyu0RlNm41yHaJj__uR8iOa9xWHHwYDJ6LmFeqo0hzmafU67VI1DMBu8&_nc_zt=24&_nc_ht=scontent-ham3-1.cdninstagram.com&_nc_gid=wmTxLkCCSgpjhNt13uDE_g&_nc_ss=7b689&oh=00_Af0j5Hb3aLjweZNFRWpMiuFJ5gPR7Rk7L02eRVkuRN2c0Q&oe=69F98563'} 
+                        <img src="/user-avatar.png"
                         className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
                         <div className="flex flex-col ml-[5px]">
                             <h2 className="font-medium text-[17px] font-medium mt-[5px]">Morning, {user.username} 👋</h2>
@@ -89,40 +120,56 @@ export default function Profile(){
                         />
                 </header>
     
-                <main className="mb-[30px]">
-                    <Link href="/statistics">
-                        <div className="w-[360px] h-[70px] bg-gray-100 rounded-xl m-auto flex flex-row">
-                            <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
-                            <div className="flex flex-col mt-[13px] ml-[10px] text-[#2879E4]">
-                                <p className="pt-15px text-[17px] font-medium">Task Statistic Report</p>
-                                <p className="text-[14px] font-light">{tasksCount} Tasks</p>
-                            </div>
-                            <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[92px] mt-[22px]"/>
-                        </div> 
-                    </Link>
-    
-                    <p className="mt-[25px] ml-[15px] font-light">General</p>
-    
-                    <div className="w-[360px] h-[70px] rounded-xl justify-between m-auto mt-[20px] mb-[25px] flex flex-row">
-                        <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
-                        <div className="flex flex-col mt-[23px] ml-[15px] text-black font-light ">
-                            <p className="pt-15px text-[17px] w-[150px] ">NotificationsTODO</p>
-                        </div>
-                        <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[100px] mr-[20px] mt-[22px]"/>
-                    </div>
-                    <div className="w-[360px] h-[70px] rounded-xl justify-between m-auto mb-[25px] flex flex-row">
-                        <img src="/bar-chart.png" className="w-[35px] h-[37px] ml-[20px] mt-[17px]"/>
-                        <div className="flex flex-col mt-[23px] ml-[15px] text-black font-light ">
-                            <p className="pt-15px text-[17px] w-[150px]">Storage & Data</p>
-                        </div>
-                        <img src="/chevron.png"  className="w-[25px] h-[25px] opacity-50 ml-[100px] mr-[20px] mt-[22px]"/>
-                    </div>
-    
-                    <button onClick={handleLogout}className="w-[360px] h-[70px] bg-[#2879E4] rounded-xl ml-[15px] flex flex-row">
-                        <img src="/logout.png" className="w-[30px] h-[30px] m-auto mr-[10px]" />
-                        <p className="m-auto ml-[0px] text-[20px] text-white font-medium">Logout</p>
-                    </button>
-                </main>
+                <main className="px-[20px] pt-[10px] pb-[100px] flex flex-col gap-[20px]">
+  
+  {/* Статистика */}
+  <section>
+    <p className="text-[11px] font-bold text-gray-400 mb-[10px] ml-[5px] uppercase tracking-[1px]">Activity</p>
+    <Link href="/statistics">
+      <div className="w-full p-[16px] bg-white rounded-3xl shadow-sm flex items-center border border-gray-50 active:scale-[0.98] transition-all">
+        <div className="w-[40px] h-[40px] bg-blue-50 rounded-2xl flex items-center justify-center">
+          <BarChart3 size={20} className="text-[#2879E4]" />
+        </div>
+        <div className="ml-[15px]">
+          <h3 className="text-[15px] font-bold text-gray-800">Statistic</h3>
+          <p className="text-[12px] text-gray-400">{tasksCount} tasks completed</p>
+        </div>
+        <ChevronRight size={18} className="ml-auto text-gray-300" />
+      </div>
+    </Link>
+  </section>
+
+  {/* Настройки */}
+  <section>
+    <p className="text-[11px] font-bold text-gray-400 mb-[10px] ml-[5px] uppercase tracking-[1px]">Settings</p>
+    <div className="bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden">
+      {settingsOptions.map((option, index) => (
+        <div 
+          key={option.id}
+          onClick={() => handleClick(option.id)}
+          className={`flex items-center px-[20px] py-[16px] cursor-pointer active:bg-gray-50 transition-colors ${
+            index !== settingsOptions.length - 1 ? 'border-b border-gray-50' : ''
+          }`}
+        >
+          <div className="w-[32px] h-[32px] flex items-center justify-center">
+            {option.icon}
+          </div>
+          <span className="ml-[12px] text-[15px] font-semibold text-gray-700">{option.title}</span>
+          <ChevronRight size={16} className="ml-auto text-gray-300" />
+        </div>
+      ))}
+    </div>
+  </section>
+
+  {/* Logout */}
+  <button 
+    onClick={handleLogout}
+    className="w-full py-[18px] flex items-center justify-center text-red-500 font-bold bg-white rounded-3xl border border-red-50 shadow-sm active:bg-red-50 transition-all"
+  >
+    <LogOut size={20} className="mr-2" />
+    Logout
+  </button>
+</main>
     
                 <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between flex flex-row fixed bottom-0 m-auto pt-[15px] pb-[10px]">
                     <Link href="/home/user" className="ml-[20px]">

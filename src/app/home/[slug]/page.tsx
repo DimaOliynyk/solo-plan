@@ -138,7 +138,7 @@ const completeTaskMutation = useMutation({
             <p className="font-light text-[15px] mt-[5px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
           </div>
           <Link href="/profile/user">
-            <img src={'https://scontent-ham3-1.cdninstagram.com/v/t51.82787-19/681313361_18355499287238847_5328308778329421688_n.jpg?stp=dst-jpg_s150x150_tt6&_nc_cat=104&ccb=7-5&_nc_sid=f7ccc5&efg=eyJ2ZW5jb2RlX3RhZyI6InByb2ZpbGVfcGljLnd3dy4xMDgwLkMzIn0%3D&_nc_ohc=4sYmR3KhSt4Q7kNvwF4RAYr&_nc_oc=AdrJITA83MEbGGqsu-24wepoahl6mSFhQyu0RlNm41yHaJj__uR8iOa9xWHHwYDJ6LmFeqo0hzmafU67VI1DMBu8&_nc_zt=24&_nc_ht=scontent-ham3-1.cdninstagram.com&_nc_gid=wmTxLkCCSgpjhNt13uDE_g&_nc_ss=7b689&oh=00_Af0j5Hb3aLjweZNFRWpMiuFJ5gPR7Rk7L02eRVkuRN2c0Q&oe=69F98563'} 
+            <img src='/user-avatar.png'
             className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
           </Link>
         </header>
@@ -153,7 +153,7 @@ const completeTaskMutation = useMutation({
                 spaceBetween={5}
                 slidesPerView={5}
                 onSlideChange={() => console.log('slide change')}
-                onSwiper={(swiper) => console.log(swiper)}
+                onSwiper={(swiper) => console.log()}
               >
                   {weekDates.map((date, idx) => (
                     <SwiperSlide className="mr-[0px]">
@@ -209,8 +209,6 @@ const completeTaskMutation = useMutation({
                     const date = new Date(e.date);
                     const day = date.getDate(); // 26
 
-                  console.log(day)
-                  console.log(`active ${active}`)
                   if(e.isCompleted === false){
                     if(Number(day) === active){
                       return(
