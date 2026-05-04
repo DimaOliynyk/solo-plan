@@ -24,7 +24,7 @@ export default function Login() {
     const password = formData.get("password");
 
     const response = await fetch(
-      "http://192.168.0.90:3001/api/auth/register",
+      "https://solo-plan-server-production.up.railway.app/api/auth/register",
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },

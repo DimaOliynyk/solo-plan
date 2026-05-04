@@ -21,7 +21,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect user to backend Google login
-    window.location.href = "http://192.168.0.90:3001/api/auth/google";
+    window.location.href = "https://solo-plan-server-production.up.railway.app/api/auth/google";
   };
 
   const mutation = useMutation({

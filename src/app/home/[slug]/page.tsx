@@ -57,7 +57,7 @@ export default function Home() {
 
 
   async function deleteTask(id: string){
-      const response = await fetch(`http://192.168.0.90:3001/api/tasks/${id}`, {
+      const response = await fetch(`https://solo-plan-server-production.up.railway.app/api/tasks/${id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -96,7 +96,7 @@ export default function Home() {
 const completeTaskMutation = useMutation({
   mutationFn: async (id: string) => {
     const response = await fetch(
-      `http://192.168.0.90:3001/api/tasks/${id}/complete`,
+      `https://solo-plan-server-production.up.railway.app/api/tasks/${id}/complete`,
       {
         method: 'PATCH',
         headers: {
