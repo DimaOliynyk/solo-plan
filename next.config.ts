@@ -1,5 +1,10 @@
 import type { NextConfig } from "next";
-import withPWA from "next-pwa";
+const withPWA = require("next-pwa")({
+  dest: "public",
+  register: true,
+  skipWaiting: true,
+  disable: process.env.NODE_ENV === "development",
+});
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
@@ -9,25 +14,14 @@ const nextConfig: NextConfig = {
       {
         source: '/',
         destination: '/login',
-        permanent: true, // 308 permanent redirect
+        permanent: true,
       },
     ];
   },
 
-  // Make sure this is here for next/image
   images: {
     domains: ['cdn.pixabay.com'],
   },
 };
 
-// Wrap your Next.js config with `withPWA`
-// Pass `disable` as a boolean, not a string
-export default withPWA({
-  ...nextConfig,
-  pwa: {
-    dest: 'public',
-    register: true,
-    skipWaiting: true,
-    disable: process.env.NODE_ENV === 'development',
-  },
-});
+export default withPWA(nextConfig);

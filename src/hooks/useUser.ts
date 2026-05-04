@@ -24,7 +24,7 @@ export async function loginUser({
   username: string;
   password: string;
 }) {
-  const response = await fetch("http://192.168.0.90:3001/api/auth/login", {
+  const response = await fetch("https://solo-plan-server-production.up.railway.app/api/auth/login", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ username, password }),

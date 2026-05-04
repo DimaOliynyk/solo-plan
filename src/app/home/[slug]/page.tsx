@@ -16,6 +16,13 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 
+// Описываем структуру объекта дня
+interface DayDetail {
+  dayNumber: number;
+  dayName: string;
+  fullDate: Date;
+}
+
 import { useUser } from '../../../hooks/useUser';
 
 import { useState, useEffect } from "react";
@@ -124,7 +131,8 @@ const completeTaskMutation = useMutation({
     return localStorage.removeItem("token"); 
   }
 
-  const user = data?.user;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = (data as any)?.user;
 
   const personalTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'personal').length;
   const workTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'work').length;
@@ -156,9 +164,9 @@ const completeTaskMutation = useMutation({
                 onSwiper={(swiper) => console.log()}
               >
                   {weekDates.map((date, idx) => (
-                    <SwiperSlide className="mr-[0px]">
+                    <SwiperSlide key={idx} className="mr-[0px]">
                     <button
-                            key={idx}
+
                             onClick={() => setActive(date.dayNumber)}
                             type="button"
                             className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 

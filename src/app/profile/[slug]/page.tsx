@@ -59,13 +59,13 @@ export default function Profile(){
         router.push("/login");             
     };
 
-    // const handleClick = (type) => {
-    //     console.log(type)
-    //     setModalContent("You clicked the text! This content can change.");
-    //     setIsModalOpen(true);
-    //     setModalType(type)
-    //     console.log(222)
-    // };
+    const handleClick = (type) => {
+        console.log(type)
+        setModalContent("You clicked the text! This content can change.");
+        setIsModalOpen(true);
+        setModalType(type)
+        console.log(222)
+    };
 
     const { data, isLoading, isError, error } = useUser();
 
@@ -75,7 +75,8 @@ export default function Profile(){
         return <div>Error: {error?.message}</div>;
     }
 
-    const user = data?.user;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const user = (data as any)?.user;
 
     const tasksCount = user.tasks.length;
 
@@ -146,7 +147,6 @@ export default function Profile(){
       {settingsOptions.map((option, index) => (
         <div 
           key={option.id}
-          onClick={() => handleClick(option.id)}
           className={`flex items-center px-[20px] py-[16px] cursor-pointer active:bg-gray-50 transition-colors ${
             index !== settingsOptions.length - 1 ? 'border-b border-gray-50' : ''
           }`}

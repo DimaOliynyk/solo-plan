@@ -13,7 +13,7 @@ export const getUser = async (): Promise<User> => {
   const token = localStorage.getItem("token");
   if (!token) throw new Error("No token found");
 
-  const response = await fetch('http://192.168.0.90:3001/api/auth/me', {
+  const response = await fetch('https://solo-plan-server-production.up.railway.app/api/auth/me', {
     method: 'GET',
     headers: {
       'Content-Type': 'application/json',

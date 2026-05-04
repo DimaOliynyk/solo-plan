@@ -20,6 +20,13 @@ import {
   QueryClientProvider,
 } from '@tanstack/react-query'
 
+interface DayDetail {
+  dayNumber: number;
+  dayName: string;
+  fullDate: Date;
+}
+
+
 export default function Schedule(){
     const [active, setActive] = useState(new Date().getDate());
     const [activetasks, setActivetasks] = useState(Number);
@@ -163,7 +170,8 @@ export default function Schedule(){
     return (hours * hourHeight) + (minutes * minuteHeight);
   };
   
-  const user = data?.user;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const user = (data as any)?.user;
 
         return(
             <div className="flex flex-col min-h-screen">
@@ -176,9 +184,8 @@ export default function Schedule(){
                           onSwiper={(swiper) => console.log()}
                         >
                             {weekDates.map((date, idx) => (
-                              <SwiperSlide className="mr-[0px]">
-                              <button
-                                      key={idx}
+                              <SwiperSlide key={idx} className="mr-[0px]">
+                              <button 
                                       onClick={() => setActive(date.dayNumber)}
                                       type="button"
                                       className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
