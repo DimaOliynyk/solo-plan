@@ -1,278 +1,161 @@
-"use client"; 
+"use client";
 
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
-import Link from 'next/link'
-
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Swiper, SwiperSlide } from 'swiper/react';
-
-// Import Swiper styles
 import 'swiper/css';
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
-
-// Описываем структуру объекта дня
-interface DayDetail {
-  dayNumber: number;
-  dayName: string;
-  fullDate: Date;
-}
-
 import { useUser } from '../../../hooks/useUser';
-
-import { useState, useEffect } from "react";
+import Footer from "@/components/Footer";
 
 export default function Home() {
-  const [active, setActive] = useState(new Date().getDate());
-  const [activetasks, setActivetasks] = useState(Number);
-  const [activetasksPersonal, setActivetasksPersonal] = useState(0)
-  const [activetasksWork, setActivetasksWork] = useState(0)
-  const [activetaskstoday, setActivetaskstoday] = useState(Number);
+  const pathname = usePathname();
+  const [activeDay, setActiveDay] = useState(new Date().getDate());
+  const { data, isLoading } = useUser();
 
-  const queryClient = useQueryClient()
-
-  function getMonthDayDetails() {
+  const monthTimeline = useMemo(() => {
     const today = new Date();
-    const year = today.getFullYear();
-    const month = today.getMonth();
+    const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+    return Array.from({ length: daysInMonth }, (_, i) => ({
+      number: i + 1,
+      label: new Date(today.getFullYear(), today.getMonth(), i + 1).toLocaleDateString('en-US', { weekday: 'short' }),
+    }));
+  }, []);
 
-    // Get total days in current month
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+  if (isLoading) return <div className="h-screen flex items-center justify-center bg-white font-black text-slate-300 uppercase tracking-widest text-xs">Syncing...</div>;
 
-    // Formatter for the day name
-    const dayNameFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long' });
-
-    const monthDetails: DayDetail[] = [];
-
-    for (let i = 1; i <= daysInMonth; i++) {
-      const date = new Date(year, month, i);
-      
-      monthDetails.push({
-        dayNumber: i,
-        dayName: dayNameFormatter.format(date),
-        fullDate: date
-      });
-    }
-
-    return monthDetails;
-  }
-
-
-  async function deleteTask(id: string){
-      const response = await fetch(`https://solo-plan-server-production.up.railway.app/api/tasks/${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem("token")}`
-        },
-      })
-
-      if(response.ok){
-        const data = await response.json();
-        
-        // setUser(user => ({
-        //   ...(user ?? {}),
-        //   tasks: user.tasks.filter(task => task.id !== id),
-        // }));
-        if(data.task.type === "personal"){
-          setActivetasksPersonal(activetasksPersonal - 1)
-        } 
-        else if(data.task.type === "work"){
-          setActivetasksWork(activetasksWork - 1)
-        } 
-      }
-
-  }
-
-
-
-
-  function formatTimeNumber(time: number): string {
-    const str = time.toString().padStart(4, '0'); // ensure it's 4 digits
-    const hours = str.slice(0, 2);
-    const minutes = str.slice(2);
-    return `${hours}:${minutes}`;
-  }
-
-
-const completeTaskMutation = useMutation({
-  mutationFn: async (id: string) => {
-    const response = await fetch(
-      `https://solo-plan-server-production.up.railway.app/api/tasks/${id}/complete`,
-      {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        },
-      }
-    );
-
-    if (!response.ok) throw new Error('Failed to complete task');
-
-    const data = await response.json();
-    return data; 
-  },
-  onSuccess: () => {
-    queryClient.invalidateQueries({ queryKey: ['user'] });
-  },
-});
-
-  const { data, isLoading, isError, error } = useUser();
-
-  if (isLoading) return <div>Loading user...</div>;
-
-  if (isError) {
-    return localStorage.removeItem("token"); 
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const user = (data as any)?.user;
+  const tasks = user?.tasks || [];
+  const activeTasks = tasks.filter((t: any) => new Date(t.date).getDate() === activeDay && !t.isCompleted);
 
-  const personalTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'personal').length;
-  const workTasksCount = user.tasks.filter(t => !t.isCompleted && t.type === 'work').length;
-
-  const weekDates = getMonthDayDetails()
   return (
-      <div className=" flex flex-col">
-        <header className="flex flex-row ml-[20px] pt-[40px] justify-between">
-          <div className="">
-            <h2 className="font-medium text-[22px] font-medium">Morning, {user.username} 👋</h2>
-            <p className="font-light text-[15px] mt-[5px]"><span className="text-red-700">{activetasksPersonal + activetasksWork} tasks </span> are waiting for you!</p>
+    // Global h-screen + overflow-hidden locks the entire page
+    <div className="h-screen w-full bg-[#F8FAFC] flex justify-center overflow-hidden font-sans">
+      
+      <div className="w-full max-w-6xl flex flex-col h-full relative">
+        
+        {/* --- HEADER --- */}
+        <header className="px-6 md:px-10 pt-8 pb-4 flex items-center justify-between shrink-0">
+          <div className="space-y-1">
+            <h2 className="text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+              Morning, {user.username} 👋
+            </h2>
+            <p className="text-xs font-bold text-rose-500 uppercase tracking-widest">
+              {activeTasks.length} TASKS ARE WAITING FOR YOU!
+            </p>
           </div>
-          <Link href="/profile/user">
-            <img src='/user-avatar.png'
-            className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
-          </Link>
+          <div className="w-12 h-12 md:w-16 md:h-16 rounded-full border-[3px] border-blue-100 shadow-sm overflow-hidden p-0.5">
+             <img src='/user-avatar.png' alt="Avatar" className="w-full h-full object-cover rounded-full" />
+          </div>
         </header>
-  
-        <main className="ml-[20px] mb-[20px] mt-[28px] mr-[20px]">
-          <div>
-            <h3 className="font-medium text-[22px]">Activities</h3>
-  
-  
-            <div className="flex flex-row justify-between">
-              <Swiper
-                spaceBetween={5}
-                slidesPerView={5}
-                onSlideChange={() => console.log('slide change')}
-                onSwiper={(swiper) => console.log()}
-              >
-                  {weekDates.map((date, idx) => (
-                    <SwiperSlide key={idx} className="mr-[0px]">
-                    <button
 
-                            onClick={() => setActive(date.dayNumber)}
-                            type="button"
-                            className={`mt-[12px] w-[65px] h-[70px] bg-[#2879E4] rounded-lg text-center transition-colors 
-                                ${active === date.dayNumber ? "bg-[#2879E4] text-white" : "bg-gray-100 text-black"}`}
-                            >
-                            <p className="pt-[5px] font-light uppercase">{date.dayName.slice(0,3)}</p>
-                            <p className="pt-[0] text-[24px]">{date.dayNumber}</p>
-                    </button>
-
-                  </SwiperSlide>
-                  ))}
-              </Swiper>
-            </div>
-          </div>
-  
-          <div className="mt-[28px]">
-            <h3 className="font-medium text-[22px]">Category</h3>
+        {/* --- MAIN LAYOUT (Locked) --- */}
+        <main className="flex-1 overflow-hidden px-6 md:px-10 grid grid-cols-1 lg:grid-cols-12 gap-8 mt-4">
+          
+          {/* LEFT SIDE */}
+          <div className="lg:col-span-5 flex flex-col gap-8 shrink-0">
             
-            <div className="flex flex-row justify-between mt-[20px]">
-              <div className="w-[175px] h-[110px] bg-white rounded-md ml-[0] flex flex-row justify-between">
-                <div className="ml-[15px] mt-[15px]">
-                  <p className="text-[19px] w-[80px]">Personal To-do</p>
-                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{personalTasksCount} Tasks remaining</p>
-  
-                  {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
-                </div>
-                <Image src="/coffeecup.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px] mt-[15px]" alt=""/>
+            {/* ONLY SCROLLABLE PART: TIMELINE */}
+            <section className="relative">
+              <h3 className="text-lg font-black text-slate-800 mb-4 tracking-tight">Activities</h3>
+              <div className="cursor-grab active:cursor-grabbing">
+                <Swiper 
+                  spaceBetween={10} 
+                  slidesPerView={4.2}
+                  breakpoints={{ 768: { slidesPerView: 5.2 } }}
+                  // Ensures the swiper doesn't bleed out of layout
+                  className="w-full"
+                >
+                  {monthTimeline.map((date) => (
+                    <SwiperSlide key={date.number}>
+                      <button
+                        onClick={() => setActiveDay(date.number)}
+                        className={`w-full py-4 rounded-2xl flex flex-col items-center transition-all border-2 ${
+                          activeDay === date.number 
+                          ? "bg-blue-600 border-blue-600 text-white shadow-lg" 
+                          : "bg-white border-slate-50 text-slate-400"
+                        }`}
+                      >
+                        <span className="text-[10px] font-bold uppercase mb-1">{date.label}</span>
+                        <span className="text-xl font-black">{date.number}</span>
+                      </button>
+                    </SwiperSlide>
+                  ))}
+                </Swiper>
               </div>
-  
-              <div className="w-[175px] h-[110px] bg-white rounded-md mr-[0] flex flex-row justify-between ml-[10px]" >
-                <div className="ml-[15px] mt-[15px]">
-                  <p className="text-[19px] w-[70px]">Work To-do</p>
-                  <p className="text-[12px] text-black opacity-60 mb-[30px]">{workTasksCount} Tasks remaining</p>
-  
-                  {/* <a href="#" className="text-[#2879E4]">Go to Tasks</a> */}
-                </div>
-                <Image src="/suitcase.png" width={28} height={28} className="mr-[10px] w-[28px] h-[28px] mt-[15px]" alt=""/>
+            </section>
+
+            {/* CATEGORIES (Static) */}
+            <section className="space-y-4">
+              <h3 className="text-lg font-black text-slate-800 tracking-tight">Category</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <CategoryCard title="Personal" count={tasks.filter((t:any)=>t.type==='personal').length} icon="/coffeecup.png" color="blue" />
+                <CategoryCard title="Work" count={tasks.filter((t:any)=>t.type==='work').length} icon="/suitcase.png" color="rose" />
               </div>
-            </div>
+            </section>
           </div>
-  
-          <div className="mt-[25px]">
-            <div className="flex flex-col justify-between">
-              <h3 className="font-medium text-[22px]">Daily task View</h3>
 
-              <div className="m-auto flex flex-col mt-[25px]">
-                {user.tasks.sort((a, b) => new Date(a.time).getTime() - new Date(b.time).getTime()).map((e) => {
-                    const date = new Date(e.date);
-                    const day = date.getDate(); // 26
-
-                  if(e.isCompleted === false){
-                    if(Number(day) === active){
-                      return(
-                       <div key={e.id} className="w-[360px] h-[140px] bg-white rounded-md mb-[20px] pt-[10px] flex flex-row">
-                                      <div className={`w-[4px] h-[50px] rounded-r-2xl ${e.type === "personal" ? "bg-[#2879E4]" : "bg-red-700"}`}>
-      
-                                      </div>
-                                      <div className="pl-[20px] w-[100%]">
-      
-                                      <div className="flex flex-row justify-between">
-                                          <p className="text-xl font-semibold capitalize mb-[0px]">{e.name}</p>
-                                          <img src="/icons8-delete.svg" className="w-[30px] h-[30px] ml-[80px] mt-[5px] mr-[20px]" onClick={() => deleteTask(e.id)}/>
-                                      </div>
-                                      <p className="text-gray-500 mt-[5px]">{e.type} To-do</p>
-                  
-                                      <div className="flex flex-row mt-[10px]">
-                                          <div>
-                                          <p>Start Time</p>
-                                          <p className="text-gray-500">{e.time}</p>
-                                          </div>
-                                          <div className="ml-[40px]">
-                                          <p>Duration</p>
-                                          <p className="text-gray-500">{e.duration} Minutes</p>
-                                          </div>
-                                          <img src="/icons8-done.svg" className="w-[30px] h-[30px] ml-[87px] mt-[10px]" onClick={() => completeTaskMutation.mutate(e.id)}/>
-                                      </div>
-                                      </div>
-                                  </div>
-                      )
-                  }
-                  }
-                })}
-              </div>
-              {/* <a href="#" className="text-[#2879E4] mt-[6px]">See all</a> */}
+          {/* RIGHT SIDE (Task View - Now Non-Scrollable) */}
+          <div className="lg:col-span-7 flex flex-col h-[75%] lg:h-[80%] bg-white rounded-[2.5rem] border border-slate-100 shadow-sm p-6 relative overflow-hidden">
+            <h3 className="text-lg font-black text-slate-800 mb-6 tracking-tight">Daily task View</h3>
+            
+            {/* Tasks are now in a fixed block. If they exceed height, they hide (overflow-hidden) */}
+            <div className="flex-1 overflow-hidden space-y-4 pr-1">
+              {activeTasks.slice(0, 4).map((task: any) => ( // Sliced to fit without scrolling
+                <div key={task.id} className="bg-slate-50/50 p-5 rounded-3xl flex items-center justify-between border border-transparent">
+                  <div className="flex items-center gap-4">
+                    <div className={`w-1.5 h-10 rounded-full ${task.type === 'personal' ? 'bg-blue-500' : 'bg-rose-500'}`} />
+                    <div>
+                        <h4 className="font-bold text-slate-800 text-base">{task.name}</h4>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{task.time} • {task.duration}m</p>
+                    </div>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-white border border-slate-100 flex items-center justify-center opacity-40">
+                    <img src="/icons8-done.svg" className="w-5 h-5" alt="done" />
+                  </div>
+                </div>
+              ))}
+              {activeTasks.length === 0 && (
+                <div className="h-full flex flex-col items-center justify-center opacity-20 py-20 border-2 border-dashed border-slate-200 rounded-[2rem]">
+                    <p className="text-xs font-black uppercase tracking-[0.4em]">No Tasks</p>
+                </div>
+              )}
             </div>
-  
-            <Link href="/newtaskcreate/user" className="block w-[210px] h-[55px] bg-[#0076FF] mt-[20px] rounded-[50px] m-auto text-center pt-[15px] text-white font-medium mb-[80px]">Add New Task</Link>
+
           </div>
         </main>
-  
-        <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between fixed bottom-0 flex flex-row m-auto pt-[15px] pb-[10px]">
-          <Link href="/home/user" className="ml-[20px]">
-            <img src="/house.png" className="w-[30px] h-[30px]"/>
-            <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
-          </Link>
-          <Link href="/schedule/user" className="">
-            <img src="/calendar.png" className="w-[30px] h-[30px]"/>
-          </Link>
-          <Link href="#" className="">
-            <img src="/chat.png" className="w-[30px] h-[30px]"/>
-          </Link>
-          <Link href="/profile/user" className="mr-[20px]">
-            <img src="/user.png" className="w-[30px] h-[30px]"/>
-          </Link>
-        </footer>
+
+        {/* --- FOOTER --- */}
+      <Footer />
       </div>
-    );
-  
+    </div>
+  );
+}
+
+// Helpers
+function CategoryCard({ title, count, icon, color }: any) {
+  const colors: any = { blue: "bg-blue-50 text-blue-600", rose: "bg-rose-50 text-rose-600" };
+  return (
+    <div className="bg-white p-5 rounded-[2rem] border border-slate-100 flex flex-col gap-3">
+       <div className="flex justify-between items-start">
+          <div className="flex flex-col">
+            <h4 className="text-sm font-black text-slate-800 leading-tight">{title}</h4>
+            <p className="text-[10px] font-bold text-slate-400 mt-0.5">{count} Tasks</p>
+          </div>
+          <div className={`w-9 h-9 rounded-full flex items-center justify-center ${colors[color]}`}>
+             <img src={icon} className="w-4 h-4 opacity-80" alt="" />
+          </div>
+       </div>
+    </div>
+  );
+}
+
+function NavIcon({ href, icon, active }: any) {
+  return (
+    <Link href={href} className={`p-4 transition-all ${active ? 'opacity-100 scale-110' : 'opacity-40'}`}>
+      <img src={icon} className="w-7 h-7 invert" alt="" />
+    </Link>
+  );
 }

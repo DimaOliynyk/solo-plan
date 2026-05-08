@@ -32,7 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 w-[390px] m-auto`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-gray-50 m-auto`}
       >
         <AuthProvider>
           {children}

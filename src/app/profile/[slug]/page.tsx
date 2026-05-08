@@ -1,193 +1,139 @@
 "use client"
 
 import Link from 'next/link';
-
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
-
-
+import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
 import { useUser } from '../../../hooks/useUser';
-
 import { 
   Bell, 
   Palette, 
-  User, 
-  ShieldCheck, 
   Database, 
   LogOut, 
   ChevronRight,
   BarChart3
 } from 'lucide-react';
+import { useQueryClient } from '@tanstack/react-query'
+import Footer from '@/components/Footer';
 
-import {
-  useQuery,
-  useMutation,
-  useQueryClient,
-  QueryClient,
-  QueryClientProvider,
-} from '@tanstack/react-query'
+export default function Profile() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { data, isLoading, isError, error } = useUser();
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState("");
 
-function Modal({ isOpen, onClose, content }) {
-  if (!isOpen) return null;
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    router.push("/login");
+  };
+
+  if (isLoading) return (
+    <div className="h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="w-10 h-10 border-4 border-blue-600/20 border-t-blue-600 rounded-full animate-spin" />
+    </div>
+  );
+
+  if (isError) {
+    localStorage.removeItem("token");
+    return <div className="p-10 text-red-500">Error: {error?.message}</div>;
+  }
+
+  const user = (data as any)?.user;
+  const tasksCount = user?.tasks?.length || 0;
+
+  const settingsOptions = [
+    { id: 'notifications', title: 'Notifications', icon: <Bell size={20} className="text-blue-500" /> },
+    { id: 'appearance', title: 'Appearance', icon: <Palette size={20} className="text-purple-500" /> },
+    { id: 'storage', title: 'Storage & Data', icon: <Database size={20} className="text-amber-500" /> }
+  ];
 
   return (
-    <div className="fixed m-auto flex justify-center items-center">
-      <div className="bg-white p-5 rounded-lg max-w-md w-full relative">
+    <div className="h-screen w-full bg-[#F8FAFC] flex flex-col overflow-hidden font-sans">
+      
+      {/* --- HEADER --- */}
+      <header className="px-6 pt-12 pb-6 shrink-0">
+        <div className="flex items-center gap-5">
+          <div className="relative">
+            <img 
+              src="/user-avatar.png" 
+              className="w-20 h-20 rounded-full object-cover border-4 border-white shadow-sm" 
+              alt="profile" 
+            />
+            <div className="absolute bottom-0 right-0 w-6 h-6 bg-blue-600 rounded-full border-4 border-white flex items-center justify-center">
+               <div className="w-1.5 h-1.5 bg-white rounded-full" />
+            </div>
+          </div>
+          <div>
+            <h2 className="text-xl font-black text-slate-900">Morning, {user?.username} 👋</h2>
+            <button className="text-sm font-bold text-blue-600 mt-1">Edit your information</button>
+          </div>
+        </div>
+      </header>
+
+      {/* --- SCROLLABLE CONTENT --- */}
+      <main className="flex-1 overflow-y-auto no-scrollbar px-6 space-y-8">
+        
+        {/* Activity Section */}
+        <section>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Activity</p>
+          <Link href="/statistics">
+            <div className="w-full p-5 bg-white rounded-[2rem] shadow-sm border border-slate-50 flex items-center group active:scale-[0.98] transition-all">
+              <div className="w-12 h-12 bg-blue-50 rounded-2xl flex items-center justify-center group-hover:bg-blue-100 transition-colors">
+                <BarChart3 size={22} className="text-blue-600" />
+              </div>
+              <div className="ml-4">
+                <h3 className="text-base font-black text-slate-800">Statistic</h3>
+                <p className="text-xs font-bold text-slate-400">{tasksCount} tasks completed</p>
+              </div>
+              <ChevronRight size={20} className="ml-auto text-slate-300" />
+            </div>
+          </Link>
+        </section>
+
+        {/* Settings Section */}
+        <section>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Settings</p>
+          <div className="bg-white rounded-[2rem] shadow-sm border border-slate-50 overflow-hidden">
+            {settingsOptions.map((option, index) => (
+              <div 
+                key={option.id}
+                className={`flex items-center px-6 py-5 cursor-pointer active:bg-slate-50 transition-colors ${
+                  index !== settingsOptions.length - 1 ? 'border-b border-slate-50' : ''
+                }`}
+              >
+                <div className="w-10 h-10 flex items-center justify-center bg-slate-50 rounded-xl">
+                  {option.icon}
+                </div>
+                <span className="ml-4 text-[15px] font-bold text-slate-700">{option.title}</span>
+                <ChevronRight size={18} className="ml-auto text-slate-200" />
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Logout */}
         <button 
-          onClick={onClose} 
-          className="absolute top-2.5 right-2.5 cursor-pointer text-lg font-bold"
+          onClick={handleLogout}
+          className="w-full py-5 flex items-center justify-center text-red-500 font-black bg-white rounded-[2rem] border border-red-50 shadow-sm active:bg-red-50 transition-all"
         >
-          X
+          <LogOut size={20} className="mr-3" />
+          Logout
         </button>
-        <div>{content}</div>
-      </div>
+
+        {/* Spacer for Floating Footer */}
+        <div className="h-32 w-full" />
+      </main>
+
+      {/* --- FIXED FLOATING FOOTER --- */}
+      <Footer />
     </div>
   );
 }
 
-
-export default function Profile(){
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [modalContent, setModalContent] = useState(String);
-    const [modalType, setModalType] = useState(String);
-
-    const queryClient = useQueryClient()
-    const router = useRouter();
-    
-    const handleLogout = () => {
-        localStorage.removeItem("token"); 
-        router.push("/login");             
-    };
-
-    const handleClick = (type) => {
-        console.log(type)
-        setModalContent("You clicked the text! This content can change.");
-        setIsModalOpen(true);
-        setModalType(type)
-        console.log(222)
-    };
-
-    const { data, isLoading, isError, error } = useUser();
-
-    if (isLoading) return <div>Loading user...</div>;
-    if (isError) {
-        localStorage.removeItem("token"); // runs immediately
-        return <div>Error: {error?.message}</div>;
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const user = (data as any)?.user;
-
-    const tasksCount = user.tasks.length;
-
-    const settingsOptions = [
-        {
-            id: 'notifications',
-            title: 'Notifications',
-            icon: <Bell size={20} className="text-blue-500" />,
-            link: '#',
-        },
-        {
-            id: 'appearance',
-            title: 'Appearance',
-            icon: <Palette size={20} className="text-purple-500" />,
-            link: '#',
-        },
-        {
-            id: 'storage',
-            title: 'Storage & Data',
-            icon: <Database size={20} className="text-amber-500" />,
-            link: '#',
-        }
-    ];
-
-    if(Object.keys(user).length !== 0){
-        return(
-            <>
-                <header className="flex flex-row w-[370px] pt-[40px] pb-[40px] ml-[20px] justify-between">
-                    <div className='flex flex-row'>
-                        <img src="/user-avatar.png"
-                        className="w-[60px] h-[60px] mr-[20px] mt-[5px] rounded-4xl"alt="user-profile-picture"/>
-                        <div className="flex flex-col ml-[5px]">
-                            <h2 className="font-medium text-[17px] font-medium mt-[5px]">Morning, {user.username} 👋</h2>
-                            <p className='font-light text-[15px] mt-[5px]'><span className='text-[#2879E4]'>Edit</span> your information</p>
-                            <p onClick={() => {handleClick('work')}}></p>
-                        </div>
-                    </div>
-                        <Modal
-                            isOpen={isModalOpen}
-                            onClose={() => setIsModalOpen(false)}
-                            content={modalContent}
-                        />
-                </header>
-    
-                <main className="px-[20px] pt-[10px] pb-[100px] flex flex-col gap-[20px]">
-  
-  {/* Статистика */}
-  <section>
-    <p className="text-[11px] font-bold text-gray-400 mb-[10px] ml-[5px] uppercase tracking-[1px]">Activity</p>
-    <Link href="/statistics">
-      <div className="w-full p-[16px] bg-white rounded-3xl shadow-sm flex items-center border border-gray-50 active:scale-[0.98] transition-all">
-        <div className="w-[40px] h-[40px] bg-blue-50 rounded-2xl flex items-center justify-center">
-          <BarChart3 size={20} className="text-[#2879E4]" />
-        </div>
-        <div className="ml-[15px]">
-          <h3 className="text-[15px] font-bold text-gray-800">Statistic</h3>
-          <p className="text-[12px] text-gray-400">{tasksCount} tasks completed</p>
-        </div>
-        <ChevronRight size={18} className="ml-auto text-gray-300" />
-      </div>
+function NavIcon({ href, icon, active }: any) {
+  return (
+    <Link href={href} className={`p-4 transition-all ${active ? 'opacity-100 scale-110' : 'opacity-30'}`}>
+      <img src={icon} className="w-6 h-6 invert" alt="" />
     </Link>
-  </section>
-
-  {/* Настройки */}
-  <section>
-    <p className="text-[11px] font-bold text-gray-400 mb-[10px] ml-[5px] uppercase tracking-[1px]">Settings</p>
-    <div className="bg-white rounded-3xl shadow-sm border border-gray-50 overflow-hidden">
-      {settingsOptions.map((option, index) => (
-        <div 
-          key={option.id}
-          className={`flex items-center px-[20px] py-[16px] cursor-pointer active:bg-gray-50 transition-colors ${
-            index !== settingsOptions.length - 1 ? 'border-b border-gray-50' : ''
-          }`}
-        >
-          <div className="w-[32px] h-[32px] flex items-center justify-center">
-            {option.icon}
-          </div>
-          <span className="ml-[12px] text-[15px] font-semibold text-gray-700">{option.title}</span>
-          <ChevronRight size={16} className="ml-auto text-gray-300" />
-        </div>
-      ))}
-    </div>
-  </section>
-
-  {/* Logout */}
-  <button 
-    onClick={handleLogout}
-    className="w-full py-[18px] flex items-center justify-center text-red-500 font-bold bg-white rounded-3xl border border-red-50 shadow-sm active:bg-red-50 transition-all"
-  >
-    <LogOut size={20} className="mr-2" />
-    Logout
-  </button>
-</main>
-    
-                <footer className="w-[390px] h-[70px] bg-white rounded-t-xl justify-between flex flex-row fixed bottom-0 m-auto pt-[15px] pb-[10px]">
-                    <Link href="/home/user" className="ml-[20px]">
-                        <img src="/house.png" className="w-[30px] h-[30px]"/>
-                        <div className="w-[5px] h-[5px] rounded-[50%] bg-black ml-[12px] mt-[10px]"></div>
-                    </Link>
-                    <Link href="/schedule/user" className="">
-                        <img src="/calendar.png" className="w-[30px] h-[30px]"/>
-                    </Link>
-                    <Link href="#" className="">
-                        <img src="/chat.png" className="w-[30px] h-[30px]"/>
-                    </Link>
-                    <Link href="/profile/user" className="mr-[20px]">
-                        <img src="/user.png" className="w-[30px] h-[30px]"/>
-                    </Link>
-                </footer>
-            </>
-    
-        )
-    }
+  );
 }
