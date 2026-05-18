@@ -45,7 +45,7 @@
 
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/DimaOliynyk/solo-plan.git](https://github.com/DimaOliynyk/solo-plan.git)
+    git clone https://github.com/DimaOliynyk/solo-plan.git
     cd solo-plan
     ```
 
