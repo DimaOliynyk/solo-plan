@@ -6,7 +6,7 @@
  <img width="250" alt="image" src="https://github.com/user-attachments/assets/675269b7-3746-4cd2-97d5-0379806cf2c9" />  <img width="250" alt="image" src="https://github.com/user-attachments/assets/5deee7cc-c355-4f9f-bcd8-6afb4ba46bc0" /> 
 
 
-[**Live Demo**](https://planer.dimaoliinyk.com) | [**Report Bug**](https://github.com/DimaOliynyk/solo-plan/issues) | [**Backend Repo**](https://github.com/DimaOliynyk/solo-plan-server)
+[**Report Bug**](https://github.com/DimaOliynyk/solo-plan/issues) | [**Backend Repo**](https://github.com/DimaOliynyk/solo-plan-server)
 
 ---
 
